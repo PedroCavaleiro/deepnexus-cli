@@ -1,7 +1,7 @@
 from .helpmenus import disks_help, sas_submenu_help, deepnexus_help, command_not_found
 from .vars import COLORS, CONFIG_PATH
 from .utils import clear_screen
-from .diskmanagement.disks import show_all_disks, show_mounted_disks, prepare_new_disk
+from .diskmanagement.disks import show_all_disks, show_mounted_disks, prepare_new_disk, locate_disk
 from .diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
 
 def main_menu(config):
@@ -47,6 +47,14 @@ def disks_menu(config):
             elif cmd == "show all":
                 print()
                 show_all_disks(config)
+            elif cmd.startswith("locate disk"):
+                parts = cmd.split()
+                if len(parts) == 2:
+                    locate_disk(config)
+                elif len(parts) == 3:
+                    locate_disk(config, parts[2])
+                else:
+                    print("Invalid syntax. Use 'locate disk' or 'locate disk r0c1'")
             elif cmd == "help":
                 disks_help()
             elif cmd == "clear":

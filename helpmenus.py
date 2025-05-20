@@ -25,10 +25,8 @@ Available commands:
   initialize disk     - Initializes a disk (interactive)
   show mounted        - Show only mounted disks from the config
   show all            - Show all disks from the config, grouped by mount state
-  clear               - Clear the terminal screen
-  help                - Show this help menu
-  back, ..            - Exit the DeepNexus Disk Utility
-  exit                - Exit the DeepNexus CLI
+  locate disk     - Interactively locate a disk
+  locate disk ID  - Locate a specific disk by mount ID (e.g., r0c1)
 """
     print(help_text)
     common_commands_with_back()

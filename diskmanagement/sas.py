@@ -11,3 +11,11 @@ def show_sas_disk(card, slot):
 def show_disk_smart(card, slot):
     output = run_command(f"/opt/MegaRAID/storcli/storcli64 /c{card}/s{slot} show smart")
     print(output)
+
+def start_locate_drive(card, slot):
+    output = run_command(f"/opt/MegaRAID/storcli/storcli64 /c{card}/s{slot} start locate")
+    print(output)
+
+def end_locate_drive(card, slot):
+    output = run_command(f"/opt/MegaRAID/storcli/storcli64 /c{card}/s{slot} stop locate")
+    print(output)

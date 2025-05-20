@@ -1,6 +1,6 @@
 from ..utils import run_command, parse_mount_targets, format_physical_slot
 from ..vars import COLORS, CONFIG_PATH
-from .sas import show_sas_all
+from .sas import show_sas_all, start_locate_drive, end_locate_drive
 import os
 import json
 from pathlib import Path
@@ -30,9 +30,9 @@ def show_mounted_disks(config):
         normalized_mount = os.path.normpath(os.path.realpath(mount_point))
         status_icon = f"{COLORS['green']}   ●  {COLORS['reset']}"
         if normalized_mount in mounted_paths:
-            data.append([status_icon, format_physical_slot(disk['phy']), disk['mnt'], disk['card'], disk['slt'], mount_point])
+            data.append([status_icon, disk['label'], mount_point, format_physical_slot(disk['phy']), disk['card'], disk['slt']])
     if data:
-        print(tabulate(data, headers=["Status", "Physical Slot", "Mount", "Card", "Slot", "Mount Path"]))
+        print(tabulate(data, headers=["Status", "Label", "Mount Path", "Physical Slot","Card", "Slot"]))
     else:
         print("No configured disks are currently mounted.")
     print()
@@ -170,16 +170,24 @@ def prepare_new_disk(config):
 
     # Append to config
     config_path = Path(CONFIG_PATH)
+
+    tmpLabel = ""
+    if label:
+        tmpLabel = label
+    else:
+        tmpLabel = "NO LABEL"
+
     try:
         phy = mount_id.replace('r', '').replace('c', '-')
         config.append({
+            "label": tmpLabel,
             "phy": phy,
             "mnt": f"hdd-{mount_id}",
             "card": card,
             "slt": slot
         })
 
-        with open(CONFIG_PATH, "w") as f:
+        with open(config_path, "w") as f:
            json.dump(config, f, indent=2)
 
         print(f"{COLORS['green']}Disk added to {CONFIG_PATH}.{COLORS['reset']}")
@@ -188,3 +196,33 @@ def prepare_new_disk(config):
 
 
     print(f"{COLORS['green']}Disk preparation complete!{COLORS['reset']}\n")
+
+def locate_disk(config, target=None):
+    if target is None:
+        print("Available disks:")
+        for i, disk in enumerate(config):
+            print(f"  {i + 1}. {disk['mnt']} ({format_physical_slot(disk['phy'])})")
+        try:
+            index = int(input("Select a disk by number: ")) - 1
+            if 0 <= index < len(config):
+                selected_disk = config[index]
+                run_locate_disk_action(selected_disk['mnt'], selected_disk['phy'], selected_disk['card'], selected_disk['slt'])
+            else:
+                print("Invalid selection.")
+        except ValueError:
+            print("Invalid input.")
+    else:
+        match = next((d for d in config if d['mnt'] == f"hdd-{target}"), None)
+        if match:
+            run_locate_disk_action(target, match['phy'], match['card'], match['slt'])
+        else:
+            print(f"Disk with mount ID '{target}' not found in config.")
+
+def run_locate_disk_action(mount_id, card, slot):
+    print(f"Locating disk: {mount_id} (Card {card}, Slot {slot})")
+    print("The disk indicator light is now blinking.")
+    print("Press Enter to stop the indicator.")
+    start_locate_drive(card, slot)
+    input()
+    end_locate_drive(card, slot)
+    print("Indicator stopped.")
