@@ -19,7 +19,7 @@ def main_menu(config):
             elif cmd == "":
                 continue
             else:
-                command_not_found()
+                command_not_found(cmd)
         except KeyboardInterrupt:
             print("Interrupted Detected! Exiting...")
             exit()
@@ -62,7 +62,7 @@ def disks_menu(config):
             elif cmd == "":
                 continue
             else:
-                command_not_found()
+                command_not_found(cmd)
         except KeyboardInterrupt:
             print("Interrupted Detected! Exiting...")
             exit()
@@ -119,7 +119,7 @@ def sas_submenu(config):
             elif cmd == "":
                 continue
             else:
-                command_not_found()
+                command_not_found(cmd)
         except KeyboardInterrupt:
             print("Interrupted Detected! Exiting...")
             exit()
