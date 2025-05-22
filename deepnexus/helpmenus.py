@@ -33,7 +33,7 @@ def sas_submenu_help():
     help_text = f"""
 Available commands:
   show all            - Show all SAS disks using storcli64
-  show disk rXcY      - Show SMART info for disk at row X col Y
+  show disk rXcY      - Show info for disk at row X col Y
   smart rXcY          - Show SMART info for disk at row X col Y
   {common_commands_with_back()}
 """
