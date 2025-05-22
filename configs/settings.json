@@ -1,0 +1,17 @@
+{
+    "enable_sas": true,
+    "update_source": "main",
+    "shell": "/bin/bash",
+    "banner": "DeepNexus",
+    "prompt": {
+        "use_app_name": true,
+        "username": {
+            "name": "songbird",
+            "color": "136,73,140"
+        },
+        "hostname": {
+            "name": "deepnexus",
+            "color": "136,73,140"
+        }
+    }
+}

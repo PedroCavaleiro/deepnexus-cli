@@ -1,4 +1,4 @@
-from ..utils import run_command
+from deepnexus.utils import run_command
 
 # Commands supported by storcli64
 # https://techdocs.broadcom.com/us/en/storage-and-ethernet-connectivity/enterprise-storage-solutions/storcli-12gbs-megaraid-tri-mode/1-0/v11869215/v11673749/v11675603/v11675913.html
