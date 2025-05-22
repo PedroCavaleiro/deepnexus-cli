@@ -56,7 +56,7 @@ def get_prompt_text(app_config, menu = []):
             prompt = f"{prompt}{font('fg', colors[0], colors[1], colors[2])}{app_config['prompt']['hostname']['name']}{font('reset')} "
 
         if len(menu) > 0:
-            menu_builder = f" ({font('fg_yellow')}"
+            menu_builder = f"({font('fg_yellow')}"
             for idx, val in enumerate(menu):
                 if idx == 0:
                     menu_builder = f"{menu_builder} {val} "
