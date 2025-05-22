@@ -15,7 +15,7 @@ def open_shell(app_config):
     python = sys.executable
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     script_path = os.path.join(root_dir, "deepnexus-cli.py")
-    os.chdir(script_path)
+    os.chdir(root_dir)
     os.execv(python, [python, script_path])
 
 if __name__ == "__main__":
