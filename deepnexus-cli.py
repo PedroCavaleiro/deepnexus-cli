@@ -10,6 +10,7 @@ def main():
 
     print(ascii_art)
     print()
+    print("DeepNexus Server managemnet tool. Type 'help' for commands.")
     main_menu()
 
 if __name__ == "__main__":    
