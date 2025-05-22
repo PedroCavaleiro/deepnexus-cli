@@ -62,6 +62,6 @@ def get_prompt_text(app_config, menu = []):
                     menu_builder = f"{menu_builder} {val} "
                 else:                    
                     menu_builder = f"{menu_builder}> {val} "
-            prompt = f"{prompt}{font('reset')}) "
+            prompt = f"{prompt}{menu_builder}{font('reset')}) "
         
         return f"{prompt}{font('bold')}> {font('reset')}"
