@@ -4,7 +4,7 @@ def common_commands():
   help                - Show this help menu
   exit                - Exit the DeepNexus CLI
 """
-    print(help_text)
+    return help
 
 def common_commands_with_back():
     help_text = """
