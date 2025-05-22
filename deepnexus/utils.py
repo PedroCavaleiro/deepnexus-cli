@@ -1,7 +1,8 @@
 import os
 import json
 import subprocess
-from deepnexus.escape import Ansi as font
+from deepnexus.escape import Ansi
+font = Ansi.escape
 
 def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
