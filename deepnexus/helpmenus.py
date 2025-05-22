@@ -5,7 +5,6 @@ def common_commands():
   exit                - Exit the DeepNexus CLI
 """
     print(help_text)
-    print()
 
 def common_commands_with_back():
     help_text = """
@@ -42,13 +41,13 @@ Available commands:
     common_commands_with_back()
 
 def deepnexus_help():
-    help_text = """
+    help_text = f"""
 Available commands:
   disks               - Enter SAS submenu
   update              - Updates to the latest version
+  {common_commands()}
 """
     print(help_text)
-    common_commands()
 
 def command_not_found(cmd):
     print()
