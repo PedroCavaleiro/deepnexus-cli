@@ -19,4 +19,5 @@ def open_shell(app_config):
     os.execv(python, [python, script_path])
 
 if __name__ == "__main__":
+    app_config = {"shell": os.environ.get("SHELL", "/bin/bash")}
     open_shell()

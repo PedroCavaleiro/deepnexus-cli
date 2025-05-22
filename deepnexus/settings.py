@@ -59,7 +59,7 @@ def settings_menu():
             settings["update_source"] = channel
             save_settings(settings)
             print(f"{status_message(Status.SUCCESS)} Update channel saved.")
-        elif choice == '1':
+        elif choice == '2':
             shell = input("Enter the shell path: ").strip()
             settings["shell"] = shell
             save_settings(settings)
@@ -67,7 +67,7 @@ def settings_menu():
 
         elif choice == '3':
             value = input("Enable SAS submenu? (yes/no): ").strip().lower()
-            settings["sas_enabled"] = (value == 'yes')
+            settings["enable_sas"] = (value == 'yes')
             save_settings(settings)
             print(f"{status_message(Status.SUCCESS)} SAS setting saved.")
 
