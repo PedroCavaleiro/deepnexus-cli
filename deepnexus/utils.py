@@ -38,7 +38,7 @@ def format_physical_slot(phy):
         return phy
     
 def get_prompt_text(app_config, menu = []):
-    if app_config["prompt"]["useAppName"]:
+    if app_config["prompt"]["use_app_name"]:
         return f"{font('bold')}deepnexus-cli > {font('reset')}"
     else:
         prompt = f"{font('bold')}"

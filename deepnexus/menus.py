@@ -3,6 +3,7 @@ from deepnexus.vars import COLORS, DISKS_CONFIG_PATH, APP_CONFIG_PATH
 from deepnexus.utils import clear_screen, load_config, get_prompt_text
 from diskmanagement.disks import show_all_disks, show_mounted_disks, prepare_new_disk, locate_disk
 from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
+from deepnexus.updater import update_tool
 
 def main_menu():
     app_config = load_config(APP_CONFIG_PATH)
@@ -17,6 +18,8 @@ def main_menu():
                 deepnexus_help()
             elif cmd == "clear":
                 clear_screen()
+            elif cmd == "update":
+                update_tool()
             elif cmd == "":
                 continue
             else:
