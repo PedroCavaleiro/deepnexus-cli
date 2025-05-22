@@ -10,9 +10,10 @@ def main():
     config = load_config(APP_CONFIG_PATH)
     ascii_art = pyfiglet.figlet_format(config["banner"])
 
-    print(ascii_art)
-    print()
+    print(ascii_art)    
     print(f"    {font('italic')}DeepNexus Server managemnet tool. Type 'help' for commands.{font('reset')}")
+    print()
+    print()
     main_menu()
 
 if __name__ == "__main__":    
