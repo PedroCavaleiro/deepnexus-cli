@@ -1,5 +1,5 @@
 from deepnexus.utils import run_command, parse_mount_targets, format_physical_slot
-from deepnexus.vars import COLORS, CONFIG_PATH
+from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from diskmanagement.sas import show_sas_all, start_locate_drive, end_locate_drive
 import os
 import json
@@ -169,7 +169,7 @@ def prepare_new_disk(config):
         return
 
     # Append to config
-    config_path = Path(CONFIG_PATH)
+    config_path = Path(DISKS_CONFIG_PATH)
 
     tmpLabel = ""
     if label:
@@ -190,7 +190,7 @@ def prepare_new_disk(config):
         with open(config_path, "w") as f:
            json.dump(config, f, indent=2)
 
-        print(f"{COLORS['green']}Disk added to {CONFIG_PATH}.{COLORS['reset']}")
+        print(f"{COLORS['green']}Disk added to {DISKS_CONFIG_PATH}.{COLORS['reset']}")
     except Exception as e:
         print(f"{COLORS['red']}Failed to update config: {e}{COLORS['reset']}")
 
