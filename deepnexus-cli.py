@@ -11,7 +11,7 @@ def main():
     ascii_art = pyfiglet.figlet_format(config["banner"])
 
     print(ascii_art)    
-    print(f"    {font('italic')}DeepNexus Server managemnet tool.\nType 'help' for commands.{font('reset')}")
+    print(f"    {font('italic')}DeepNexus Server managemnet tool.")
     print(f"    {font('italic')}Type 'help' for commands.{font('reset')}")
     print()
     print()
