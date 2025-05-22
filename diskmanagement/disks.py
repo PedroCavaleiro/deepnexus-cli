@@ -206,7 +206,7 @@ def locate_disk(config, target=None):
             index = int(input("Select a disk by number: ")) - 1
             if 0 <= index < len(config):
                 selected_disk = config[index]
-                run_locate_disk_action(selected_disk['mnt'], selected_disk['phy'], selected_disk['card'], selected_disk['slt'])
+                run_locate_disk_action(selected_disk['mnt'], selected_disk['phy'], selected_disk['card'], selected_disk['slt'])  # type: ignore
             else:
                 print("Invalid selection.")
         except ValueError:
@@ -214,7 +214,7 @@ def locate_disk(config, target=None):
     else:
         match = next((d for d in config if d['mnt'] == f"hdd-{target}"), None)
         if match:
-            run_locate_disk_action(target, match['phy'], match['card'], match['slt'])
+            run_locate_disk_action(target, match['phy'], match['card'], match['slt']) # type: ignore
         else:
             print(f"Disk with mount ID '{target}' not found in config.")
 
