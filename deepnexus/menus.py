@@ -22,8 +22,8 @@ def main_menu():
                 print()
                 update_tool()
             elif cmd == "settings":
-                print()
                 settings_menu()
+                print()
                 app_config = load_config(APP_CONFIG_PATH)
             elif cmd == "":
                 continue
