@@ -23,8 +23,8 @@ Available commands:
   initialize disk     - Initializes a disk (interactive)
   show mounted        - Show only mounted disks from the config
   show all            - Show all disks from the config, grouped by mount state
-  locate disk     - Interactively locate a disk
-  locate disk ID  - Locate a specific disk by mount ID (e.g., r0c1)
+  locate disk         - Interactively locate a disk
+  locate disk ID      - Locate a specific disk by mount ID (e.g., r0c1)
   {common_commands_with_back()}
 """
     print(help_text)
