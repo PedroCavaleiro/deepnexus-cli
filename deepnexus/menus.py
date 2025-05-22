@@ -19,6 +19,7 @@ def main_menu():
             elif cmd == "clear":
                 clear_screen()
             elif cmd == "update":
+                print()
                 update_tool()
             elif cmd == "":
                 continue

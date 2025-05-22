@@ -1,6 +1,7 @@
 {
     "enable_sas": true,
     "update_source": "main",
+    "banner": "DeepNexus",
     "prompt": {
         "use_app_name": true,
         "username": {
