@@ -1,0 +1,14 @@
+{
+    "enable_sas": true,
+    "prompt": {
+        "useAppName": true,
+        "username": {
+            "name": "songbird",
+            "color": "136,73,140"
+        },
+        "hostname": {
+            "name": "deepnexus",
+            "color": "136,73,140"
+        }
+    }
+}

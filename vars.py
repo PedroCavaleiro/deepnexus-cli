@@ -1,4 +1,5 @@
-CONFIG_PATH = "disks.json"
+DISKS_CONFIG_PATH = "./configs/disks.json"
+APP_CONFIG_PATH = "./configs/settings.json"
 
 COLORS = {
     "green": "\033[92m",
