@@ -46,7 +46,7 @@ def get_prompt_text(app_config, menu = []):
             if app_config["prompt"]["username"]["color"] == "":            
                 prompt = f"{prompt}{app_config['prompt']['username']['name']}@"
             else:
-                colors = app_config["prompt"]["username"]["color"].strip()
+                colors = app_config["prompt"]["username"]["color"].split(",")
                 prompt = f"{prompt}{font('fg', colors[0], colors[1], colors[2])}{app_config['prompt']['username']['name']}{font('reset')}{font('bold')}@"
         
         if app_config["prompt"]["hostname"]["color"] == "":            
