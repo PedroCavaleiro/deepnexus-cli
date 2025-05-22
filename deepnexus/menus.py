@@ -14,7 +14,7 @@ def main_menu():
             if cmd == "exit":
                 break
             elif cmd == "shell":
-                open_shell()
+                open_shell(app_config)
             elif cmd == "disks":
                 disks_menu(app_config)
             elif cmd == "help":
