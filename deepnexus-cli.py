@@ -1,4 +1,4 @@
-from .deepnexus.menus import main_menu
+from deepnexus.menus import main_menu
 
 def main():
     main_menu()
