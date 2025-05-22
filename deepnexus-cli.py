@@ -2,6 +2,8 @@ from deepnexus.menus import main_menu
 from deepnexus.utils import load_config
 from deepnexus.vars import APP_CONFIG_PATH
 import pyfiglet
+from deepnexus.escape import Ansi
+font = Ansi.escape
 
 def main():
 
@@ -10,7 +12,7 @@ def main():
 
     print(ascii_art)
     print()
-    print("DeepNexus Server managemnet tool. Type 'help' for commands.")
+    print(f"    {font('italic')}DeepNexus Server managemnet tool. Type 'help' for commands.{font('reset')}")
     main_menu()
 
 if __name__ == "__main__":    
