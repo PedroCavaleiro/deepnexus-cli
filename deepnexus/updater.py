@@ -29,13 +29,13 @@ def create_backup():
         else:
             shutil.copy2(s, d)
 
-    print(f"🔒 Backup created at {backup_path}")
+    print(f"🔒   Backup created at {backup_path}")
 
 
 def get_latest_tag():
     result = subprocess.run(["git", "ls-remote", "--tags", REPO_URL], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
-        print("❌ Failed to retrieve tags:", result.stderr.decode())
+        print("❌   Failed to retrieve tags:", result.stderr.decode())
         return None
 
     lines = result.stdout.decode().splitlines()
@@ -53,18 +53,18 @@ def update_tool():
     if source.lower() == "tag":
         source = get_latest_tag()
         if not source:
-            print("❌ No tags found. Aborting update.")
+            print("❌.  No tags found. Aborting update.")
             return
-        print(f"📦 Latest tag resolved to: {source}")
+        print(f"📦   Latest tag resolved to: {source}")
     else:
-        print(f"📦 Updating from source: {source}...")
+        print(f"📦   Updating from source: {source}...")
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         clone_cmd = ["git", "clone", REPO_URL, tmp_dir, "--branch", source, "--depth", "1"]
         result = subprocess.run(clone_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if result.returncode != 0:
-            print("❌ Update failed:", result.stderr.decode())
+            print("❌   Update failed:", result.stderr.decode())
             return
 
         create_backup()
@@ -84,7 +84,7 @@ def update_tool():
             else:
                 shutil.copy2(s, d)
 
-        print("✅ Update complete. Restarting the tool...\n")
+        print("✅   Update complete. Restarting the tool...\n")
         python = sys.executable
         os.execv(python, [python] + sys.argv)
 
