@@ -1,8 +1,8 @@
 from .helpmenus import disks_help, sas_submenu_help, deepnexus_help, command_not_found
 from .vars import COLORS, DISKS_CONFIG_PATH, APP_CONFIG_PATH
 from .utils import clear_screen, load_config, get_prompt_text
-from .diskmanagement.disks import show_all_disks, show_mounted_disks, prepare_new_disk, locate_disk
-from .diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
+from ..diskmanagement.disks import show_all_disks, show_mounted_disks, prepare_new_disk, locate_disk
+from ..diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
 
 def main_menu():
     app_config = load_config(APP_CONFIG_PATH)

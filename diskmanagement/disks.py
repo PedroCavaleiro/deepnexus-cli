@@ -1,5 +1,5 @@
-from ..utils import run_command, parse_mount_targets, format_physical_slot
-from ..vars import COLORS, CONFIG_PATH
+from ..deepnexus.utils import run_command, parse_mount_targets, format_physical_slot
+from ..deepnexus.vars import COLORS, CONFIG_PATH
 from .sas import show_sas_all, start_locate_drive, end_locate_drive
 import os
 import json
