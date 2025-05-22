@@ -2,6 +2,7 @@ from deepnexus.helpmenus import deepnexus_help, command_not_found
 from deepnexus.vars import APP_CONFIG_PATH
 from deepnexus.utils import clear_screen, load_config, get_prompt_text
 from deepnexus.updater import update_tool
+from deepnexus.settings import settings_menu
 from diskmanagement.menu import disks_menu
 
 def main_menu():
@@ -20,6 +21,10 @@ def main_menu():
             elif cmd == "update":
                 print()
                 update_tool()
+            elif cmd == "settings":
+                print()
+                settings_menu()
+                app_config = load_config(APP_CONFIG_PATH)
             elif cmd == "":
                 continue
             else:
