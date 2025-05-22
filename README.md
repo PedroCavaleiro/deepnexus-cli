@@ -18,6 +18,11 @@ Pressing ctrl+c at any moment will exit DeepNexus CLI
 ## Main App Commands
 
 * **disks**: Opens DeepNexus Disk CLI
+* **shell**: Opens a shell
+* **update**: Updates this tool
+* **settings**: Configures the tool
+
+
 
 ## DeepNexus Disk CLI Tool (disk management)
 

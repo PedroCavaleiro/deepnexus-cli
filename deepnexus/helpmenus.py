@@ -21,6 +21,7 @@ Available commands:
   disks               - Enter SAS submenu
   shell               - Open shell
   update              - Updates to the latest version
+  settings            - Open settings menu
   {common_commands()}
 """
     print(help_text)
