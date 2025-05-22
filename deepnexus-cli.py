@@ -6,7 +6,7 @@ import pyfiglet
 def main():
 
     config = load_config(APP_CONFIG_PATH)
-    ascii_art = pyfiglet.figlet_format(config["DeepNexus"])
+    ascii_art = pyfiglet.figlet_format(config["banner"])
 
     print(ascii_art)
     print()
