@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+from enum import Enum
 from deepnexus.escape import Ansi
 font = Ansi.escape
 
@@ -65,3 +66,19 @@ def get_prompt_text(app_config, menu = []):
             prompt = f"{prompt}{menu_builder}{font('reset')}) "
         
         return f"{prompt}{font('bold')}> {font('reset')}"
+
+class Status(Enum):
+    SUCCESS = 1,
+    ERROR = 2,
+    WARNING = 3,
+    INFO = 4
+
+def status_message(message):
+    if message == Status.SUCCESS:
+        return f"{font('bold')}[{font('fg_green')}SUCCESS{font('reset')}{font('bold')}]{font('reset')}"
+    elif message == Status.ERROR:
+        return f"{font('bold')}[{font('fg_red')} ERROR {font('reset')}{font('bold')}]{font('reset')}"
+    elif message == Status.WARNING:
+        return f"{font('bold')}[{font('fg_yellow')}WARNING{font('reset')}{font('bold')}]{font('reset')}"
+    elif message == Status.INFO:
+        return f"{font('bold')}[{font('fg_blue')} INFO  {font('reset')}{font('bold')}]{font('reset')}"
