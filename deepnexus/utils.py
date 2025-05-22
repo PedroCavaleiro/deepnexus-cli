@@ -43,24 +43,24 @@ def get_prompt_text(app_config, menu = []):
         prompt = f"{font('bold')}"
         if app_config["prompt"]["username"]["name"] != "":
             if app_config["prompt"]["username"]["color"] == "":            
-                prompt = f"{prompt}{app_config["prompt"]["username"]["name"]}@"
+                prompt = f"{prompt}{app_config['prompt']['username']['name']}@"
             else:
                 colors = app_config["prompt"]["username"]["color"].strip()
-                prompt = f"{prompt}{font('fg', colors[0], colors[1], colors[2])}{app_config["prompt"]["username"]["name"]}{font("reset")}{font("bold")}@"
+                prompt = f"{prompt}{font('fg', colors[0], colors[1], colors[2])}{app_config['prompt']['username']['name']}{font('reset')}{font('bold')}@"
         
         if app_config["prompt"]["hostname"]["color"] == "":            
-            prompt = f"{prompt}{app_config["prompt"]["hostname"]["name"]}{font("reset")}"
+            prompt = f"{prompt}{app_config['prompt']['hostname']['name']}{font('reset')}"
         else:
             colors = app_config["prompt"]["hostname"]["color"].strip()
-            prompt = f"{prompt}{font('fg', colors[0], colors[1], colors[2])}{app_config["prompt"]["hostname"]["name"]}{font("reset")}"
+            prompt = f"{prompt}{font('fg', colors[0], colors[1], colors[2])}{app_config['prompt']['hostname']['name']}{font('reset')}"
 
         if len(menu) > 0:
-            menu_builder = f"({font("fg_yellow")}"
+            menu_builder = f"({font('fg_yellow')}"
             for idx, val in menu:
                 if idx == 0:
                     menu_builder = f"{menu_builder} {val} "
                 else:                    
                     menu_builder = f"{menu_builder}> {val} "
-            prompt = f"{prompt}{font("reset")}) "
+            prompt = f"{prompt}{font('reset')}) "
         
-        return f"{prompt}{font("bold")}> {font("reset")}"
+        return f"{prompt}{font('bold')}> {font('reset')}"
