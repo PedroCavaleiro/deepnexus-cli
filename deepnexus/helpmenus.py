@@ -45,6 +45,7 @@ def deepnexus_help():
     help_text = """
 Available commands:
   disks               - Enter SAS submenu
+  update              - Updates to the latest version
 """
     print(help_text)
     common_commands()
