@@ -39,7 +39,6 @@ def disks_menu(app_config):
         try:
             cmd = input(get_prompt_text(app_config, ["disks"])).strip()
             if cmd == "exit":
-                exit()
                 break
             elif cmd == "initialize disk":
                 prepare_new_disk(disks_config)
