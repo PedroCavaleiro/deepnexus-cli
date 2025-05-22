@@ -13,7 +13,8 @@ def open_shell(app_config):
         print(f"{status_message(Status.ERROR)} Shell exited with error: {e}")
     
     python = sys.executable
-    script_path = os.path.abspath(__file__)
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    script_path = os.path.join(root_dir, "deepnexus-cli.py")
     os.execv(python, [python, script_path])
 
 if __name__ == "__main__":
