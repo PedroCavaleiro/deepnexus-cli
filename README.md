@@ -4,6 +4,7 @@ A python utility to manage a Proxmox instance mainly for storage. This was devel
 ## Dependencies
 
 * **tabulate**: You can install it using `apt install python3-tabulate`
+* **pyfiglet**: You can install it using `apt install python3-pyfiglet`
 * **storcli64**
 
 ## Common Commands
@@ -13,6 +14,10 @@ A python utility to manage a Proxmox instance mainly for storage. This was devel
 * **clear**: Clear the terminal screen
 
 Pressing ctrl+c at any moment will exit DeepNexus CLI
+
+## Main App Commands
+
+* **disks**: Opens DeepNexus Disk CLI
 
 ## DeepNexus Disk CLI Tool (disk management)
 

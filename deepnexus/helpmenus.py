@@ -11,7 +11,7 @@ def common_commands_with_back():
   clear               - Clear the terminal screen
   help                - Show this help menu
   back, ..            - Exit the DeepNexus Disk Utility
-  exit                - Exit the DeepNexus CLI
+  exit                - Exit the current tool
 """
     return help_text
 

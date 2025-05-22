@@ -46,7 +46,11 @@ def disks_menu(app_config):
             elif cmd == "back" or cmd == "..":
                 break
             elif cmd == "sas":
-                sas_submenu(app_config, disks_config)
+                goback = sas_submenu(app_config, disks_config)
+                if goback:
+                    break
+                else:
+                    continue
             elif cmd == "show mounted":
                 print()
                 show_mounted_disks(disks_config)
@@ -70,16 +74,16 @@ def disks_menu(app_config):
             else:
                 command_not_found(cmd)
         except KeyboardInterrupt:
-            print("Interrupted Detected! Exiting...")
-            exit()
+            print("Interrupted Detected! Exiting Disk Management Tool...")
             break
     
 def sas_submenu(app_config, config):
+    goback = False
     while True:
         try:
             cmd = input(get_prompt_text(app_config, ["disks", "sas"])).strip()
             if cmd == "exit":
-                exit()
+                goback = True
                 break
             elif cmd == "back" or cmd == "..":
                 break
@@ -126,6 +130,6 @@ def sas_submenu(app_config, config):
             else:
                 command_not_found(cmd)
         except KeyboardInterrupt:
-            print("Interrupted Detected! Exiting...")
-            exit()
+            print("Interrupted Detected! Exiting Disk Management Tool...")
             break
+    return goback
