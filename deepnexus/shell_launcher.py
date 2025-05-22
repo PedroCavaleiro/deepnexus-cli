@@ -13,7 +13,8 @@ def open_shell(app_config):
         print(f"{status_message(Status.ERROR)} Shell exited with error: {e}")
     
     python = sys.executable
-    os.execv(python, [python] + sys.argv)
+    script_path = os.path.abspath(__file__)
+    os.execv(python, [python, script_path])
 
 if __name__ == "__main__":
     open_shell()
