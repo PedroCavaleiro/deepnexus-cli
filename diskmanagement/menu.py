@@ -1,4 +1,5 @@
-from deepnexus.helpmenus import disks_help, sas_submenu_help, command_not_found
+from deepnexus.helpmenus import command_not_found
+from diskmanagement.helpmenu import disks_help, sas_submenu_help
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from deepnexus.utils import load_config, get_prompt_text, clear_screen
 from diskmanagement.disks import show_all_disks, show_mounted_disks, prepare_new_disk, locate_disk
