@@ -48,9 +48,21 @@ add_to_shell_login() {
 }
 
 create_launcher() {
-    echo -e "#!/bin/bash\npython3 \"$INSTALL_DIR/deepnexus-cli.py\" \"\$@\"" > "$BIN_LINK"
+    cat > "$BIN_LINK" <<EOF
+#!/bin/bash
+
+INSTALLER="\$HOME/.local/share/deepnexus-cli/install.sh"
+CLI_MAIN="\$HOME/.local/share/deepnexus-cli/deepnexus-cli.py"
+
+if [[ "\$1" == "update" || "\$1" == "uninstall" ]]; then
+    bash "\$INSTALLER" "\$1"
+else
+    python3 "\$CLI_MAIN" "\$@"
+fi
+EOF
     chmod +x "$BIN_LINK"
 }
+
 
 ensure_local_bin_in_path() {
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
