@@ -75,6 +75,12 @@ def mount_disk():
         print(f"{status_message(Status.ERROR)}No eligible unmounted /dev/sdXY partitions found.")
         return
 
+    print("Available unmounted disks:")
+    for idx, disk in enumerate(eligible_partitions, 1):
+        print(f"  {idx}. {disk}")
+    print()
+
+
 
 
 def prepare_new_disk(config):
