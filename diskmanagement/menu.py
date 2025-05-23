@@ -28,6 +28,7 @@ def disks_menu(app_config):
                         continue
                 else:
                     print(f"{status_message(Status.ERROR)} SAS Functionality Disabled!")
+                    print()
             elif cmd == "show mounted":
                 print()
                 show_mounted_disks(disks_config)

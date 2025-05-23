@@ -5,6 +5,9 @@ def open_shell(app_config):
     home_dir = os.path.expanduser("~")
     os.chdir(home_dir)
 
+    env = os.environ.copy()
+    env["DEEPNEXUS_INTERNAL_CALL"] = "1"
+
     shell = os.environ.get("SHELL", app_config["shell"])
     os.system(shell)
 

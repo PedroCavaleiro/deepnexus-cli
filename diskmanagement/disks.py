@@ -1,44 +1,57 @@
-from deepnexus.utils import run_command, parse_mount_targets, format_physical_slot
+from deepnexus.utils import run_command, parse_mount_targets
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from diskmanagement.sas import show_sas_all, start_locate_drive, end_locate_drive
 import os
 import json
 from pathlib import Path
 from tabulate import tabulate
+from deepnexus.utils import status_message, Status, load_config
+from deepnexus.escape import Ansi
+from deepnexus.vars import APP_CONFIG_PATH
+font = Ansi.escape
 
 def show_all_disks(config):
-    mounted_paths = parse_mount_targets()
-    data = []
-    for disk in config:
-        mount_point = f"/mnt/{disk['mnt']}"
-        normalized_mount = os.path.normpath(os.path.realpath(mount_point))
-        is_mounted = normalized_mount in mounted_paths
-        status_icon = f"{COLORS['green']}   ●  {COLORS['reset']}" if is_mounted else f"{COLORS['red']}   ●  {COLORS['reset']}"
-        entry = [status_icon, format_physical_slot(disk['phy']), disk['mnt'], disk['card'], disk['slt'], mount_point]
-        data.append(entry)
-    if data:
-        print(tabulate(data, headers=["Status", "Physical Slot", "Mount", "Card", "Slot", "Mount Path"]))
+    if len(config) > 0:
+        mounted_paths = parse_mount_targets()
+        data = []
+        for disk in config:
+            mount_point = f"/mnt/{disk['mnt']}"
+            normalized_mount = os.path.normpath(os.path.realpath(mount_point))
+            is_mounted = normalized_mount in mounted_paths
+            status_icon = f"{font('fg_green')}   ●  {font('reset')}" if is_mounted else f"{font('fg_red')}   ●  {font('reset')}"
+            entry = [status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] == -1 else "N/A", disk['slt'] if disk['slt'] == -1 else "N/A"]
+            data.append(entry)
+        if data:
+            print(tabulate(data, headers=["Status", "Label", "Mount Point", "Partition UUID", "Physical Location", "SAS Card", "SAS Slot"]))
+        else:
+            print("None")
     else:
-        print("None")
+        print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
 
 def show_mounted_disks(config):
-    mounted_paths = parse_mount_targets()
-    data = []
-    for disk in config:
-        mount_point = f"/mnt/{disk['mnt']}"
-        normalized_mount = os.path.normpath(os.path.realpath(mount_point))
-        status_icon = f"{COLORS['green']}   ●  {COLORS['reset']}"
-        if normalized_mount in mounted_paths:
-            data.append([status_icon, disk['label'], mount_point, format_physical_slot(disk['phy']), disk['card'], disk['slt']])
-    if data:
-        print(tabulate(data, headers=["Status", "Label", "Mount Path", "Physical Slot","Card", "Slot"]))
+    if len(config) > 0:
+        mounted_paths = parse_mount_targets()
+        data = []
+        for disk in config:
+            mount_point = f"/mnt/{disk['mnt']}"
+            normalized_mount = os.path.normpath(os.path.realpath(mount_point))
+            status_icon = f"{font('fg_green')}   ●  {font('reset')}"
+            if normalized_mount in mounted_paths:
+                data.append([status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] == -1 else "N/A", disk['slt'] if disk['slt'] == -1 else "N/A"])
+        if data:
+            print(tabulate(data, headers=["Status", "Label", "Mount Point", "Partition UUID", "Physical Location", "SAS Card", "SAS Slot"]))
+        else:
+            print("No configured disks are currently mounted.")
     else:
-        print("No configured disks are currently mounted.")
+        print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
 
 def prepare_new_disk(config):
-    print(f"{COLORS['yellow']}Scanning for unmounted /dev/sdX disks...{COLORS['reset']}\n")
+
+    app_config = load_config(APP_CONFIG_PATH)
+
+    print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
 
     lsblk_output = run_command("lsblk -o NAME,MOUNTPOINT -n -p")
 
@@ -68,7 +81,7 @@ def prepare_new_disk(config):
             eligible_disks.append(device)
 
     if not eligible_disks:
-        print(f"{COLORS['red']}No eligible unmounted /dev/sdX disks found.{COLORS['reset']}\n")
+        print(f"{status_message(Status.ERROR)}No eligible unmounted /dev/sdX disks found.")
         return
 
     print("Available unmounted disks:")
@@ -82,34 +95,33 @@ def prepare_new_disk(config):
             print("Operation cancelled.")
             return
         if not (1 <= choice <= len(eligible_disks)):
-            print(f"{COLORS['red']}Invalid choice.{COLORS['reset']}")
+            print(f"{font('fg_red')}Invalid choice.{font('reset')}")
             return
     except ValueError:
-        print(f"{COLORS['red']}Invalid input.{COLORS['reset']}")
+        print(f"{font('fg_red')}Invalid input.{font('reset')}")
         return
 
     disk = eligible_disks[choice - 1]
-    print(f"\n{COLORS['yellow']}Selected disk: {disk}{COLORS['reset']}")
+    print(f"\n{font('fg_yellow')}Selected disk: {disk}{font('reset')}")
     confirm = input(f"This will erase all data on {disk}. Proceed? (yes/[no]): ").lower()
     if confirm != "yes":
         print("Operation aborted.")
         return
 
-    print(f"{COLORS['blue']}Creating GPT partition table on {disk}...{COLORS['reset']}")
+    print(f"{status_message(Status.INFO)} Creating GPT partition table on {disk}...")
     run_command(f"parted -s {disk} mklabel gpt")
 
-    print("Creating primary ext4 partition spanning the entire disk...")
+    print(f"{status_message(Status.INFO)} Creating primary ext4 partition spanning the entire disk...")
     run_command(f"parted -s {disk} mkpart primary ext4 0% 100%")
 
     partition = disk + "1"
-    print(f"Formatting {partition} as ext4...")
+    print(f"{status_message(Status.INFO)} Formatting {partition} as ext4...")
     run_command(f"mkfs.ext4 -F {partition}")
 
     label = input("Enter label for the new partition: ").strip()
     if label:
-        print(f"Labeling partition as '{label}'...")
+        print(f"{status_message(Status.INFO)} Labeling partition as '{label}'...")
         run_command(f"e2label {partition} '{label}'")
-        print(f"{COLORS['green']}Partition labeled successfully!{COLORS['reset']}")
     else:
         print("No label set.")
 
@@ -122,51 +134,48 @@ def prepare_new_disk(config):
             break
 
     if not uuid:
-        print(f"{COLORS['red']}Failed to retrieve UUID for {partition}.{COLORS['reset']}")
+        print(f"{status_message(Status.ERROR)} Failed to retrieve UUID for {partition}.")
         return
 
-    # Get mount location by specifying row and column
-    while True:
-        mount_id = input("Enter mount identifier (e.g., r0c1): ").strip().lower()
-        if mount_id and mount_id.startswith("r") and "c" in mount_id:
-            break
-        print("Invalid mount ID format. Use format like 'r0c1'.")
+    # Get mount 
+    nomnt_mount_point = input("Enter mount point (e.g., sdc1): ").strip().lower()
+    mount_point = f"/mnt/{nomnt_mount_point}"
 
-    mount_point = f"/mnt/hdd-{mount_id}"
-    
     os.makedirs(mount_point, exist_ok=True)
 
+    fstab_choice = input(f"Do you want to add this disk to fstab? (yes/[no]): ").strip().lower()
     # Append to /etc/fstab
-    fstab_line = f"UUID={uuid} {mount_point} ext4 defaults,nofail,x-systemd.device-timeout=0 0 2\n"
-    with open("/etc/fstab", "a") as fstab:
-        fstab.write(fstab_line)
+    if fstab_choice == "yes":
+        fstab_line = f"UUID={uuid} {mount_point} ext4 defaults,nofail,x-systemd.device-timeout=0 0 2\n"
+        with open("/etc/fstab", "a") as fstab:
+            fstab.write(fstab_line)
 
-    print(f"{COLORS['green']}Entry added to /etc/fstab:{COLORS['reset']}")
-    print(fstab_line)
+        print(f"{status_message(Status.SUCCESS)} Entry added to /etc/fstab")
+        print(fstab_line)
 
-    run_command("systemctl daemon-reload")
+        run_command("systemctl daemon-reload")
 
     # Ask to mount
     choice = input(f"Do you want to mount the disk now? (yes/[no]): ").strip().lower()
     if choice == "yes":
         result = run_command(f"mount {mount_point}")
         print(result)
-        print(f"{COLORS['green']}Disk mounted at {mount_point}.{COLORS['reset']}")
-    else:
-        print("You can mount later with:")
-        print(f"  mount {mount_point}")
+        print(f"{status_message(Status.SUCCESS)}Disk mounted at {mount_point}.")
 
-    # Configure Disks.json
-    # Show SAS info and prompt for card and slot
-    print("\nDisplaying SAS card/slot info to help with identification:\n")
-    show_sas_all()
+    card = -1
+    slot = -1
 
-    try:
-        card = int(input("Enter SAS card number: ").strip())
-        slot = int(input("Enter SAS slot number: ").strip())
-    except ValueError:
-        print(f"{COLORS['red']}Invalid input for card or slot. Skipping config update.{COLORS['reset']}")
-        return
+    if app_config['enable_sas']:
+        # Show SAS info and prompt for card and slot
+        print("\nDisplaying SAS card/slot info to help with identification:\n")
+        show_sas_all()
+
+        try:
+            card = int(input("Enter SAS card number: ").strip())
+            slot = int(input("Enter SAS slot number: ").strip())
+        except ValueError:
+            print(f"{COLORS['red']}Invalid input for card or slot. Skipping config update.{COLORS['reset']}")
+            return
 
     # Append to config
     config_path = Path(DISKS_CONFIG_PATH)
@@ -178,30 +187,36 @@ def prepare_new_disk(config):
         tmpLabel = "NO LABEL"
 
     try:
-        phy = mount_id.replace('r', '').replace('c', '-')
+        phy = input("Enter the physical location in the case (enter for none): ")
         config.append({
             "label": tmpLabel,
-            "phy": phy,
-            "mnt": f"hdd-{mount_id}",
+            "phy": phy if phy == "" else "Unknown",
+            "mnt": mount_point,
             "card": card,
-            "slt": slot
+            "slt": slot,
+            "uuid": uuid
         })
 
         with open(config_path, "w") as f:
            json.dump(config, f, indent=2)
 
-        print(f"{COLORS['green']}Disk added to {DISKS_CONFIG_PATH}.{COLORS['reset']}")
+        print(f"{status_message(Status.SUCCESS)}Disk added to {DISKS_CONFIG_PATH}.")
     except Exception as e:
-        print(f"{COLORS['red']}Failed to update config: {e}{COLORS['reset']}")
+        print(f"{status_message(Status.ERROR)}Failed to update config: {e}")
 
 
-    print(f"{COLORS['green']}Disk preparation complete!{COLORS['reset']}\n")
+    print(f"{status_message(Status.SUCCESS)}Disk preparation complete!\n")
 
 def locate_disk(config, target=None):
+    app_config = load_config(APP_CONFIG_PATH)
+    if app_config['enable_sas'] == False:
+        print(f"{status_message(Status.ERROR)} SAS Functionality Disabled! This functionality currently only works on SAS")
+        return
+
     if target is None:
         print("Available disks:")
         for i, disk in enumerate(config):
-            print(f"  {i + 1}. {disk['mnt']} ({format_physical_slot(disk['phy'])})")
+            print(f"  {i + 1}. {disk['label']} {disk['mnt']} ({disk['phy']})")
         try:
             index = int(input("Select a disk by number: ")) - 1
             if 0 <= index < len(config):
@@ -212,7 +227,7 @@ def locate_disk(config, target=None):
         except ValueError:
             print("Invalid input.")
     else:
-        match = next((d for d in config if d['mnt'] == f"hdd-{target}"), None)
+        match = next((d for d in config if d['mnt'] == f"mnt/{target}"), None)
         if match:
             run_locate_disk_action(target, match['phy'], match['card'], match['slt']) # type: ignore
         else:

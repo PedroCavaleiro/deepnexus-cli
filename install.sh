@@ -48,16 +48,16 @@ add_to_shell_login() {
 }
 
 create_launcher() {
-    cat > "$BIN_LINK" <<EOF
+    cat > "$BIN_LINK" <<'EOF'
 #!/bin/bash
 
-INSTALLER="\$HOME/.local/share/deepnexus-cli/install.sh"
-CLI_MAIN="\$HOME/.local/share/deepnexus-cli/deepnexus-cli.py"
+INSTALLER="$HOME/.local/share/deepnexus-cli/install.sh"
+CLI_MAIN="$HOME/.local/share/deepnexus-cli/deepnexus-cli.py"
 
-if [[ "\$1" == "update" || "\$1" == "uninstall" ]]; then
-    bash "\$INSTALLER" "\$1"
+if [[ -z "$DEEPNEXUS_INTERNAL_CALL" && ("$1" == "update" || "$1" == "uninstall") ]]; then
+    bash "$INSTALLER" "$1"
 else
-    python3 "\$CLI_MAIN" "\$@"
+    python3 "$CLI_MAIN" "$@"
 fi
 EOF
     chmod +x "$BIN_LINK"
