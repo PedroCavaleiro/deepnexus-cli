@@ -47,6 +47,36 @@ def show_mounted_disks(config):
         print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
 
+def mount_disk():
+    print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
+    lsblk_output = run_command("lsblk -o NAME,MOUNTPOINT -n -p")
+    mounted_devices = set()
+
+    for line in lsblk_output.strip().splitlines():
+        parts = line.split()
+        name = parts[0]
+        mount = parts[1] if len(parts) > 1 else ""
+
+        if mount:
+            mounted_devices.add(name)
+
+    # List eligible unmounted partitions
+    eligible_partitions = []
+    for line in lsblk_output.strip().splitlines():
+        parts = line.split()
+        name = parts[0]
+        base = os.path.basename(name)
+
+        if base.startswith("sd") and len(base) > 3:
+            if name not in mounted_devices:
+                eligible_partitions.append(name)
+
+    if not eligible_partitions:
+        print(f"{status_message(Status.ERROR)}No eligible unmounted /dev/sdXY partitions found.")
+        return
+
+
+
 def prepare_new_disk(config):
 
     app_config = load_config(APP_CONFIG_PATH)
