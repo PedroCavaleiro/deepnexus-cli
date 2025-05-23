@@ -77,13 +77,10 @@ install_tool() {
     cp -r "$TMP_DIR/deepnexus-cli-$REPO_BRANCH/"* "$INSTALL_DIR"
     rm -rf "$TMP_DIR"
 
-    # Step 4: Create CLI launcher
     create_launcher
 
-    # Step 5: Ensure local bin is in PATH
     ensure_local_bin_in_path
 
-    # Step 6: Ask for login startup
     read -p "Do you want to auto-run deepnexus-cli at shell login? (y/n): " run_login
     if [[ "$run_login" =~ ^[Yy]$ ]]; then
         add_to_shell_login
