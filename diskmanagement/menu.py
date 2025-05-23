@@ -42,7 +42,7 @@ def disks_menu(app_config):
                 elif len(parts) == 3:
                     locate_disk(disks_config, parts[2])
                 else:
-                    print("Invalid syntax. Use 'locate disk' or 'locate disk r0c1'")
+                    print("Invalid syntax. Use 'locate disk' or 'locate disk sda'")
             elif cmd == "help":
                 disks_help()
             elif cmd == "clear":
@@ -69,36 +69,34 @@ def sas_submenu(app_config, config):
                 show_sas_all()
             elif cmd.startswith("show disk "):
                 arg = cmd[10:].strip().lower()
-                if arg.startswith("r") and "c" in arg:
-                    target_mnt = f"hdd-{arg}"
-                    disk = next((d for d in config if d.get("mnt") == target_mnt), None)
-                    if disk:
-                        card = disk.get("card")
-                        slot = disk.get("slt")
-                        if card is not None and slot is not None:
-                            show_sas_disk(card, slot)
+                disk = next((d for d in config if d.get("mnt") == f"/mnt/{arg}"), None)
+                if disk:
+                    card = disk.get("card")
+                    slot = disk.get("slt")
+                    if card is not None and slot is not None:
+                        if card == -1 or slot == -1:
+                            print(f"Disk {arg} found but missing card/slot info.\n")
                         else:
-                            print(f"Disk {target_mnt} found but missing card/slot info.\n")
+                            show_sas_disk(card, slot)
                     else:
-                        print(f"No disk found with mount point {target_mnt}.\n")
+                        print(f"Disk {arg} found but missing card/slot info.\n")
                 else:
-                    print("Invalid format. Use: show disk rXcY (e.g. show disk r1c4)\n")
+                    print(f"No disk found with mount point {arg}.\n")
             elif cmd.startswith("smart "):
                 arg = cmd[6:].strip().lower()
-                if arg.startswith("r") and "c" in arg:
-                    target_mnt = f"hdd-{arg}"
-                    disk = next((d for d in config if d.get("mnt") == target_mnt), None)
-                    if disk:
-                        card = disk.get("card")
-                        slot = disk.get("slt")
-                        if card is not None and slot is not None:
-                            show_disk_smart(card, slot)
+                disk = next((d for d in config if d.get("mnt") == f"/mnt/{arg}"), None)
+                if disk:
+                    card = disk.get("card")
+                    slot = disk.get("slt")
+                    if card is not None and slot is not None:
+                        if card == -1 or slot == -1:
+                            print(f"Disk {arg} found but missing card/slot info.\n")
                         else:
-                            print(f"Disk {target_mnt} found but missing card/slot info.\n")
+                            show_disk_smart(card, slot)
                     else:
-                        print(f"No disk found with mount point {target_mnt}.\n")
+                        print(f"Disk {arg} found but missing card/slot info.\n")
                 else:
-                    print("Invalid format. Use: smart rXcY (e.g. smart r1c4)\n")
+                    print(f"No disk found with mount point {arg}.\n")
             elif cmd == "help":
                 sas_submenu_help()
             elif cmd == "clear":

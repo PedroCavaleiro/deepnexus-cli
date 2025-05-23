@@ -210,7 +210,7 @@ def prepare_new_disk(config):
 def locate_disk(config, target=None):
     app_config = load_config(APP_CONFIG_PATH)
     if app_config['enable_sas'] == False:
-        print(f"{status_message(Status.ERROR)} SAS Functionality Disabled! This functionality currently only works on SAS")
+        print(f"{status_message(Status.ERROR)} SAS Functionality Disabled! This functionality currently only works on SAS connected disks\n")
         return
 
     if target is None:
