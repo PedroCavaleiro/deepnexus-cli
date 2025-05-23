@@ -1,7 +1,5 @@
 import os
-import subprocess
 import sys
-from deepnexus.utils import status_message, Status
 
 def open_shell(app_config):
     home_dir = os.path.expanduser("~")
