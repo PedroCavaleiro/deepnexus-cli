@@ -47,8 +47,8 @@ def settings_menu():
     while True:
         print("\nSettings Menu")
         print("1. Set update channel (dev, main, tag)")
-        print("2. Enable/disable SAS submenu")
-        print("3. Default Shell")
+        print("2. Default Shell")
+        print("3. Enable/disable SAS submenu")        
         print("4. Change banner text")
         print("5. Prompt configuration")
         print("0. Back")
@@ -56,24 +56,24 @@ def settings_menu():
 
         if choice == '1':
             channel = input("Enter update channel (dev, main, tag): ").strip()
-            settings["update_source"] = channel
+            settings["update_source"] = channel # type: ignore
             save_settings(settings)
             print(f"{status_message(Status.SUCCESS)} Update channel saved.")
         elif choice == '2':
             shell = input("Enter the shell path: ").strip()
-            settings["shell"] = shell
+            settings["shell"] = shell # type: ignore
             save_settings(settings)
             print(f"{status_message(Status.SUCCESS)} Shell saved.")
 
         elif choice == '3':
             value = input("Enable SAS submenu? (yes/no): ").strip().lower()
-            settings["enable_sas"] = (value == 'yes')
+            settings["enable_sas"] = (value == 'yes') # type: ignore
             save_settings(settings)
             print(f"{status_message(Status.SUCCESS)} SAS setting saved.")
 
         elif choice == '4':
             banner = input("Enter new banner text: ")
-            settings["banner"] = banner
+            settings["banner"] = banner # type: ignore
             save_settings(settings)
             print(f"{status_message(Status.SUCCESS)} Banner updated.")
 

@@ -20,9 +20,12 @@ def disks_menu(app_config):
             elif cmd == "back" or cmd == "..":
                 break
             elif cmd == "sas":
-                goback = sas_submenu(app_config, disks_config)
-                if goback:
-                    break
+                if app_config["enable_sas"]:                    
+                    goback = sas_submenu(app_config, disks_config)
+                    if goback:
+                        break
+                    else:
+                        continue
                 else:
                     continue
             elif cmd == "show mounted":

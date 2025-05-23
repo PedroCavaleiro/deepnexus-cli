@@ -8,7 +8,7 @@ font = Ansi.escape
 def main():
 
     config = load_config(APP_CONFIG_PATH)
-    ascii_art = pyfiglet.figlet_format(config["banner"])
+    ascii_art = pyfiglet.figlet_format(config["banner"]) # type: ignore
 
     print(ascii_art)    
     print(f"    {font('italic')}DeepNexus Server management tool.")
