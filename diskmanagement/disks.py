@@ -92,13 +92,42 @@ def mount_disk(config):
         print(f"{font('fg_red')}Invalid input.{font('reset')}")
         return
 
-    target_partition = eligible_partitions[choice]
+    target_partition = eligible_partitions[choice - 1]
     print("Available mount points:")
-    for idx, point in enumerate(get_available_mounts(), 1):
-        print(f"  {idx}. {point}")
-    print()
+    available_mounts = get_available_mounts()
+    if len(available_mounts) > 0:
+        print(f"  1. Create new mount point")
+        for idx, point in enumerate(get_available_mounts(), 2):
+            print(f"  {idx}. {point.replace("/mnt", "")}")
+        print()
+    else:
+        print("No available mount points")    
 
+    try:
+        mp_choice = int(input("Select a partition number to mount (or 0 to cancel): "))
+        if mp_choice == 0:
+            print("Operation cancelled.")
+            return
+        if not (1 <= mp_choice <= len(available_mounts)):
+            print(f"{font('fg_red')}Invalid choice.{font('reset')}")
+            return
+    except ValueError:
+        print(f"{font('fg_red')}Invalid input.{font('reset')}")
+        return
     
+    if mp_choice == 1:
+        mount_point = input("Enter the new mount point (e.g., sdc1): ")
+    else:
+        mount_point = available_mounts[mp_choice - 2]
+
+    print(mount_point)
+    print(target_partition)
+
+    #os.makedirs(mount_point, exist_ok=True)
+    
+    #result = run_command(f"mount /dev/{} /mnt/{mount_point}")
+    #print(result)
+    #print(f"{status_message(Status.SUCCESS)}Disk mounted at {mount_point}.")
 
 
 def prepare_new_disk(config):
