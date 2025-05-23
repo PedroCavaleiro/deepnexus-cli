@@ -1,10 +1,18 @@
 # deepnexus-cli
 A python utility to manage a Proxmox instance mainly for storage. This was developed for **my** needs but aditions and improvements are welcomed.
 
+## Installation, Update and Uninstall
+
+* Install: `bash <(curl -fsSL https://raw.githubusercontent.com/PedroCavaleiro/deepnexus-cli/main/install.sh)`
+* Update: `deepnexus-cli update`
+* Uninstall: `deepnexus-cli uninstall`
+
+It's possible, and recommended, to run the update from within the tool by typing `update` instead of running from this script
+
 ## Dependencies
 
-* **tabulate**: You can install it using `apt install python3-tabulate`
-* **pyfiglet**: You can install it using `apt install python3-pyfiglet`
+* **tabulate**: You can install it using `apt install python3-tabulate` (installed automatically by install script)
+* **pyfiglet**: You can install it using `apt install python3-pyfiglet` (installed automatically by install script)
 * **storcli64**
 
 ## Common Commands
