@@ -100,20 +100,19 @@ def mount_disk(config):
         for idx, point in enumerate(get_available_mounts(), 2):
             print(f"  {idx}. {point.replace('/mnt', '')}")
         print()
+        try:
+            mp_choice = int(input("Select a partition number to mount (or 0 to cancel): "))
+            if mp_choice == 0:
+                print("Operation cancelled.")
+                return
+            if not (1 <= mp_choice <= len(available_mounts)):
+                print(f"{font('fg_red')}Invalid choice.{font('reset')}")
+                return
+        except ValueError:
+            print(f"{font('fg_red')}Invalid input.{font('reset')}")
+            return
     else:
-        print("No available mount points")    
-
-    try:
-        mp_choice = int(input("Select a partition number to mount (or 0 to cancel): "))
-        if mp_choice == 0:
-            print("Operation cancelled.")
-            return
-        if not (1 <= mp_choice <= len(available_mounts)):
-            print(f"{font('fg_red')}Invalid choice.{font('reset')}")
-            return
-    except ValueError:
-        print(f"{font('fg_red')}Invalid input.{font('reset')}")
-        return
+        print("No available mount points")
     
     if mp_choice == 1:
         mount_point = input("Enter the new mount point (e.g., sdc1): ")
