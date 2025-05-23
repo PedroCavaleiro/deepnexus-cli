@@ -82,3 +82,13 @@ def status_message(message):
         return f"{font('bold')}[{font('fg_yellow')}WARNING{font('reset')}{font('bold')}]{font('reset')}"
     elif message == Status.INFO:
         return f"{font('bold')}[{font('fg_blue')} INFO  {font('reset')}{font('bold')}]{font('reset')}"
+    
+def get_available_mounts():
+    mnt_base = "/mnt"
+    all_mnt_dirs = [os.path.join(mnt_base, d) for d in os.listdir(mnt_base)
+                    if os.path.isdir(os.path.join(mnt_base, d))]
+    
+    with open("/proc/mounts", "r") as f:
+        mounted_points = set(line.split()[1] for line in f)
+        
+    return [d for d in all_mnt_dirs if d not in mounted_points]

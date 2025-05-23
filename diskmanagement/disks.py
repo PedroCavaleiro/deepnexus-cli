@@ -5,7 +5,7 @@ import os
 import json
 from pathlib import Path
 from tabulate import tabulate
-from deepnexus.utils import status_message, Status, load_config
+from deepnexus.utils import status_message, Status, load_config, get_available_mounts
 from deepnexus.escape import Ansi
 from deepnexus.vars import APP_CONFIG_PATH
 font = Ansi.escape
@@ -47,7 +47,7 @@ def show_mounted_disks(config):
         print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
 
-def mount_disk():
+def mount_disk(config):
     print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
     lsblk_output = run_command("lsblk -nr -o NAME,MOUNTPOINT")
     mounted_devices = set()
@@ -80,7 +80,25 @@ def mount_disk():
         print(f"  {idx}. {disk}")
     print()
 
+    try:
+        choice = int(input("Select a partition number to mount (or 0 to cancel): "))
+        if choice == 0:
+            print("Operation cancelled.")
+            return
+        if not (1 <= choice <= len(eligible_partitions)):
+            print(f"{font('fg_red')}Invalid choice.{font('reset')}")
+            return
+    except ValueError:
+        print(f"{font('fg_red')}Invalid input.{font('reset')}")
+        return
 
+    target_partition = eligible_partitions[choice]
+    print("Available mount points:")
+    for idx, point in enumerate(get_available_mounts(), 1):
+        print(f"  {idx}. {point}")
+    print()
+
+    
 
 
 def prepare_new_disk(config):

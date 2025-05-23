@@ -16,7 +16,7 @@ def disks_menu(app_config):
             if cmd == "exit":
                 break
             elif cmd == "mount disk":
-                mount_disk()
+                mount_disk(disks_config)
             elif cmd == "initialize disk":
                 prepare_new_disk(disks_config)
             elif cmd == "back" or cmd == "..":
