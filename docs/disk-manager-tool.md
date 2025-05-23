@@ -9,18 +9,20 @@ The structure of the file is the following
 [
   {
     "phy": "0-0",
-    "mnt": "hdd-r0c0",
+    "mnt": "sda",
     "card": 1,
     "slt": 3,
-    "label": "EXOS X18"
+    "label": "EXOS X18",
+    "uuid": ""
   }
 ]
 ```
-* **phy**: The location in the case in matrix style, row-column
-* **mnt**: The mount location (these are inside /mnt/) each point is hdd-r{ROW}c{COL} 
+* **phy**: The location in the case
+* **mnt**: The mount location (these are inside /mnt/)
 * **card**: The SAS interface on which the disk is located
 * **slt**: The SAS slot on which the disk is located
 * **label**: This label will also be written into the partition label
+* **uuid**: The UUID of the partition
 
 ## Supported Commands 
 

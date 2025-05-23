@@ -22,15 +22,15 @@ def prompt_menu(settings):
         choice = input("Select an option: ")
 
         if choice == '1':
-            prompt["default"] = input("Use default prompt? (yes/no): ").strip().lower() == 'yes'
+            prompt["use_app_name"] = input("Use default prompt? (yes/no): ").strip().lower() == 'yes'
         elif choice == '2':
-            prompt["username"] = input("Enter username: ").strip()
+            prompt["username"]["name"] = input("Enter username: ").strip()
         elif choice == '3':
-            prompt["username_color"] = input("Enter username color (r,g,b): ").strip()
+            prompt["username"]["color"] = input("Enter username color (r,g,b): ").strip()
         elif choice == '4':
-            prompt["hostname"] = input("Enter hostname: ").strip()
+            prompt["hostname"]["name"] = input("Enter hostname: ").strip()
         elif choice == '5':
-            prompt["hostname_color"] = input("Enter hostname color (r,g,b): ").strip()
+            prompt["hostname"]["color"] = input("Enter hostname color (r,g,b): ").strip()
         elif choice == '0':
             break
         else:

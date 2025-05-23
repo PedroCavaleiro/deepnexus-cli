@@ -54,6 +54,10 @@ create_launcher() {
 INSTALLER="\$HOME/.local/share/deepnexus-cli/install.sh"
 CLI_MAIN="\$HOME/.local/share/deepnexus-cli/deepnexus-cli.py"
 
+if [[ "\$DEEPNEXUS_INTERNAL_CALL" == "1" ]]; then
+    exit 0
+fi
+
 if [[ "\$1" == "update" || "\$1" == "uninstall" ]]; then
     bash "\$INSTALLER" "\$1"
 else
