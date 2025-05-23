@@ -9,7 +9,7 @@ def open_shell(app_config):
     env["DEEPNEXUS_INTERNAL_CALL"] = "1"
 
     shell = os.environ.get("SHELL", app_config["shell"])
-    os.system(shell)
+    os.system(f'DEEPNEXUS_INTERNAL_CALL=1 {shell}')
 
     os.system('clear')
 
