@@ -49,7 +49,7 @@ def show_mounted_disks(config):
 
 def mount_disk():
     print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
-    lsblk_output = run_command("lsblk -o NAME,MOUNTPOINT -n -p")
+    lsblk_output = run_command("lsblk -nr -o NAME,MOUNTPOINT")
     mounted_devices = set()
 
     for line in lsblk_output.strip().splitlines():
