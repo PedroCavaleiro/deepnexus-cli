@@ -98,7 +98,7 @@ def mount_disk(config):
     if len(available_mounts) > 0:
         print(f"  1. Create new mount point")
         for idx, point in enumerate(get_available_mounts(), 2):
-            print(f"  {idx}. {point.replace("/mnt", "")}")
+            print(f"  {idx}. {point.replace('/mnt', '')}")
         print()
     else:
         print("No available mount points")    
