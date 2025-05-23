@@ -190,7 +190,7 @@ def prepare_new_disk(config):
         phy = input("Enter the physical location in the case (enter for none): ")
         config.append({
             "label": tmpLabel,
-            "phy": phy if phy == "" else "Unknown",
+            "phy": phy if phy != "" else "Unknown",
             "mnt": mount_point,
             "card": card,
             "slt": slot,
@@ -227,7 +227,7 @@ def locate_disk(config, target=None):
         except ValueError:
             print("Invalid input.")
     else:
-        match = next((d for d in config if d['mnt'] == f"mnt/{target}"), None)
+        match = next((d for d in config if d['mnt'] == f"/mnt/{target}"), None)
         if match:
             run_locate_disk_action(target, match['phy'], match['card'], match['slt']) # type: ignore
         else:
