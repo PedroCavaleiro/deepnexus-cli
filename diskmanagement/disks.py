@@ -134,11 +134,11 @@ def mount_disk(config):
     print(f"Mount point: {mount_point}")
 
 
-    os.makedirs(mount_point, exist_ok=True)
+    #os.makedirs(mount_point, exist_ok=True)
     
-    result = run_command(f"mount /dev/{target_partition} /mnt/{mount_point}")
-    print(result)
-    print(f"{status_message(Status.SUCCESS)}Disk mounted at {mount_point}.")
+    #result = run_command(f"mount /dev/{target_partition} /mnt/{mount_point}")
+    #print(result)
+    #print(f"{status_message(Status.SUCCESS)}Disk mounted at {mount_point}.")
 
 
 def prepare_new_disk(config):
