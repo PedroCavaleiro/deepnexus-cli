@@ -49,28 +49,39 @@ def show_mounted_disks(config):
 
 import os
 
+import os
+
 def mount_disk(config):
     print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
     lsblk_output = run_command("lsblk -nr -o NAME,MOUNTPOINT,SIZE")
     mounted_devices = set()
 
     for line in lsblk_output.strip().splitlines():
-        parts = line.split()
+        parts = line.split(None, 2)  # Only split into 3 parts max
         name = parts[0]
-        mount = parts[1] if len(parts) > 2 else ""
-
+        mount = parts[1] if len(parts) > 1 and not parts[1].endswith('G') else ""
         if mount:
             mounted_devices.add(name)
 
     # List eligible unmounted partitions
     eligible_partitions = []
     for line in lsblk_output.strip().splitlines():
-        parts = line.split()
+        parts = line.split(None, 2)
         name = parts[0]
-        mount = parts[1] if len(parts) > 2 else ""
-        size = parts[2] if len(parts) > 2 else ""
-        base = os.path.basename(name)
+        mount = ""
+        size = ""
 
+        if len(parts) == 3:
+            if parts[1].startswith("/"):  # likely a mount path
+                mount = parts[1]
+                size = parts[2]
+            else:
+                mount = ""
+                size = parts[1]  # size shifted left due to missing mountpoint
+        elif len(parts) == 2:
+            size = parts[1]  # no mount point
+
+        base = os.path.basename(name)
         if base.startswith("sd") and len(base) > 3:
             if name not in mounted_devices:
                 eligible_partitions.append((name, size))
@@ -122,10 +133,7 @@ def mount_disk(config):
     if mp_choice == 1:
         mount_point = input("Enter the new mount point (e.g., /mnt/sdc1): ")
     else:
-        mount_point = available_mounts[mp_choice - 2]
-
-    print(f"Selected partition: {target_partition}")
-    print(f"Mount point: {mount_point}")
+        mount_point = available_mounts[mp_choice -_]()
 
     #os.makedirs(mount_point, exist_ok=True)
     
