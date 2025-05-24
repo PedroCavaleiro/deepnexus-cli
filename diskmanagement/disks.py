@@ -51,39 +51,34 @@ import os
 
 import os
 
+import os
+
 def mount_disk(config):
     print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
     lsblk_output = run_command("lsblk -nr -o NAME,MOUNTPOINT,SIZE")
-    mounted_devices = set()
 
-    for line in lsblk_output.strip().splitlines():
-        parts = line.split(None, 2)  # Only split into 3 parts max
-        name = parts[0]
-        mount = parts[1] if len(parts) > 1 and not parts[1].endswith('G') else ""
-        if mount:
-            mounted_devices.add(name)
-
-    # List eligible unmounted partitions
     eligible_partitions = []
-    for line in lsblk_output.strip().splitlines():
-        parts = line.split(None, 2)
-        name = parts[0]
-        mount = ""
-        size = ""
 
+    for line in lsblk_output.strip().splitlines():
+        parts = line.split(None, 2)  # split into max 3 parts
         if len(parts) == 3:
-            if parts[1].startswith("/"):  # likely a mount path
-                mount = parts[1]
-                size = parts[2]
-            else:
-                mount = ""
-                size = parts[1]  # size shifted left due to missing mountpoint
+            name, mountpoint, size = parts
         elif len(parts) == 2:
-            size = parts[1]  # no mount point
+            name = parts[0]
+            if parts[1].startswith('/'):
+                mountpoint = parts[1]
+                size = ""
+            else:
+                mountpoint = ""
+                size = parts[1]
+        else:
+            continue  # Skip malformed lines
 
         base = os.path.basename(name)
+
+        # Match sdXY pattern (e.g. sda1, sdb9, sdc123)
         if base.startswith("sd") and len(base) > 3:
-            if name not in mounted_devices:
+            if not mountpoint:  # Only include unmounted
                 eligible_partitions.append((name, size))
 
     if not eligible_partitions:
@@ -133,7 +128,11 @@ def mount_disk(config):
     if mp_choice == 1:
         mount_point = input("Enter the new mount point (e.g., /mnt/sdc1): ")
     else:
-        mount_point = available_mounts[mp_choice -_]()
+        mount_point = available_mounts[mp_choice - 2]
+
+    print(f"Selected partition: {target_partition}")
+    print(f"Mount point: {mount_point}")
+
 
     #os.makedirs(mount_point, exist_ok=True)
     
