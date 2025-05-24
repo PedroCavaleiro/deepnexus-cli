@@ -108,7 +108,7 @@ def mount_disk(config):
     if len(available_mounts) > 0:
         print(f"  1. Create new mount point")
         for idx, point in enumerate(available_mounts, 2):
-            print(f"  {idx}. {point.replace('/mnt', '')}")
+            print(f"  {idx}. {point.replace('/mnt/', '')}")
         print()
         try:
             mp_choice = int(input("Select a mount point option (or 0 to cancel): "))
@@ -134,11 +134,11 @@ def mount_disk(config):
     print(f"Mount point: {mount_point}")
 
 
-    #os.makedirs(mount_point, exist_ok=True)
+    os.makedirs(mount_point, exist_ok=True)
     
-    #result = run_command(f"mount /dev/{target_partition} /mnt/{mount_point}")
-    #print(result)
-    #print(f"{status_message(Status.SUCCESS)}Disk mounted at {mount_point}.")
+    result = run_command(f"mount /dev/{target_partition} /mnt/{mount_point.replace('/mnt/', '')}")
+    print(result)
+    print(f"{status_message(Status.SUCCESS)}Disk mounted at /mnt/{mount_point.replace('/mnt/', '')}.")
 
 
 def prepare_new_disk(config):
