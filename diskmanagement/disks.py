@@ -19,7 +19,7 @@ def show_all_disks(config):
             normalized_mount = os.path.normpath(os.path.realpath(mount_point))
             is_mounted = normalized_mount in mounted_paths
             status_icon = f"{font('fg_green')}   ●  {font('reset')}" if is_mounted else f"{font('fg_red')}   ●  {font('reset')}"
-            entry = [status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] == -1 else "N/A", disk['slt'] if disk['slt'] == -1 else "N/A"]
+            entry = [status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] != -1 else "N/A", disk['slt'] if disk['slt'] != -1 else "N/A"]
             data.append(entry)
         if data:
             print(tabulate(data, headers=["Status", "Label", "Mount Point", "Partition UUID", "Physical Location", "SAS Card", "SAS Slot"]))
@@ -38,7 +38,7 @@ def show_mounted_disks(config):
             normalized_mount = os.path.normpath(os.path.realpath(mount_point))
             status_icon = f"{font('fg_green')}   ●  {font('reset')}"
             if normalized_mount in mounted_paths:
-                data.append([status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] == -1 else "N/A", disk['slt'] if disk['slt'] == -1 else "N/A"])
+                data.append([status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] != -1 else "N/A", disk['slt'] if disk['slt'] != -1 else "N/A"])
         if data:
             print(tabulate(data, headers=["Status", "Label", "Mount Point", "Partition UUID", "Physical Location", "SAS Card", "SAS Slot"]))
         else:
@@ -46,12 +46,6 @@ def show_mounted_disks(config):
     else:
         print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
-
-import os
-
-import os
-
-import os
 
 def mount_disk(config):
     print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
@@ -130,15 +124,11 @@ def mount_disk(config):
     else:
         mount_point = available_mounts[mp_choice - 2]
 
-    print(f"Selected partition: {target_partition}")
-    print(f"Mount point: {mount_point}")
-
-
     os.makedirs(mount_point, exist_ok=True)
     
     result = run_command(f"mount /dev/{target_partition} /mnt/{mount_point.replace('/mnt/', '')}")
     print(result)
-    print(f"{status_message(Status.SUCCESS)}Disk mounted at /mnt/{mount_point.replace('/mnt/', '')}.")
+    print(f"{status_message(Status.SUCCESS)} Disk mounted at /mnt/{mount_point.replace('/mnt/', '')}.")
 
 
 def prepare_new_disk(config):
