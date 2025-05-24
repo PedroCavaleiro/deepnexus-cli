@@ -47,15 +47,17 @@ def show_mounted_disks(config):
         print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
 
+import os
+
 def mount_disk(config):
     print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
-    lsblk_output = run_command("lsblk -nr -o NAME,MOUNTPOINT")
+    lsblk_output = run_command("lsblk -nr -o NAME,MOUNTPOINT,SIZE")
     mounted_devices = set()
 
     for line in lsblk_output.strip().splitlines():
         parts = line.split()
         name = parts[0]
-        mount = parts[1] if len(parts) > 1 else ""
+        mount = parts[1] if len(parts) > 2 else ""
 
         if mount:
             mounted_devices.add(name)
@@ -65,19 +67,21 @@ def mount_disk(config):
     for line in lsblk_output.strip().splitlines():
         parts = line.split()
         name = parts[0]
+        mount = parts[1] if len(parts) > 2 else ""
+        size = parts[2] if len(parts) > 2 else ""
         base = os.path.basename(name)
 
         if base.startswith("sd") and len(base) > 3:
             if name not in mounted_devices:
-                eligible_partitions.append(name)
+                eligible_partitions.append((name, size))
 
     if not eligible_partitions:
         print(f"{status_message(Status.ERROR)}No eligible unmounted /dev/sdXY partitions found.")
         return
 
     print("Available unmounted disks:")
-    for idx, disk in enumerate(eligible_partitions, 1):
-        print(f"  {idx}. {disk}")
+    for idx, (disk, size) in enumerate(eligible_partitions, 1):
+        print(f"  {idx}. {disk} ({size})")
     print()
 
     try:
@@ -92,20 +96,20 @@ def mount_disk(config):
         print(f"{font('fg_red')}Invalid input.{font('reset')}")
         return
 
-    target_partition = eligible_partitions[choice - 1]
+    target_partition, _ = eligible_partitions[choice - 1]
     print("Available mount points:")
     available_mounts = get_available_mounts()
     if len(available_mounts) > 0:
         print(f"  1. Create new mount point")
-        for idx, point in enumerate(get_available_mounts(), 2):
+        for idx, point in enumerate(available_mounts, 2):
             print(f"  {idx}. {point.replace('/mnt', '')}")
         print()
         try:
-            mp_choice = int(input("Select a partition number to mount (or 0 to cancel): "))
+            mp_choice = int(input("Select a mount point option (or 0 to cancel): "))
             if mp_choice == 0:
                 print("Operation cancelled.")
                 return
-            if not (1 <= mp_choice <= len(available_mounts)):
+            if not (1 <= mp_choice <= len(available_mounts) + 1):
                 print(f"{font('fg_red')}Invalid choice.{font('reset')}")
                 return
         except ValueError:
@@ -113,14 +117,15 @@ def mount_disk(config):
             return
     else:
         print("No available mount points")
-    
+        return
+
     if mp_choice == 1:
-        mount_point = input("Enter the new mount point (e.g., sdc1): ")
+        mount_point = input("Enter the new mount point (e.g., /mnt/sdc1): ")
     else:
         mount_point = available_mounts[mp_choice - 2]
 
-    print(mount_point)
-    print(target_partition)
+    print(f"Selected partition: {target_partition}")
+    print(f"Mount point: {mount_point}")
 
     #os.makedirs(mount_point, exist_ok=True)
     
@@ -247,7 +252,7 @@ def prepare_new_disk(config):
     card = -1
     slot = -1
 
-    if app_config['enable_sas']:
+    if app_config['enable_sas']: # type: ignore
         # Show SAS info and prompt for card and slot
         print("\nDisplaying SAS card/slot info to help with identification:\n")
         show_sas_all()
@@ -291,7 +296,7 @@ def prepare_new_disk(config):
 
 def locate_disk(config, target=None):
     app_config = load_config(APP_CONFIG_PATH)
-    if app_config['enable_sas'] == False:
+    if app_config['enable_sas'] == False: # type: ignore
         print(f"{status_message(Status.ERROR)} SAS Functionality Disabled! This functionality currently only works on SAS connected disks\n")
         return
 
