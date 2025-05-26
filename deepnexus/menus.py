@@ -5,6 +5,7 @@ from deepnexus.updater import update_tool
 from deepnexus.settings import settings_menu
 from diskmanagement.menu import disks_menu
 from deepnexus.shell_launcher import open_shell
+from deepnexus.temperature import print_tree, build_temperature_tree
 
 def main_menu():
     app_config = load_config(APP_CONFIG_PATH)
@@ -28,6 +29,12 @@ def main_menu():
                 settings_menu()
                 print()
                 app_config = load_config(APP_CONFIG_PATH)
+            elif cmd == "temperatures" or cmd == "temps":
+                print()
+                print(app_config["prompt"]["hostname"]["name"])
+                tree = build_temperature_tree()
+                print_tree(tree)
+                print()
             elif cmd == "":
                 continue
             else:

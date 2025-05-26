@@ -2,7 +2,7 @@ from deepnexus.helpmenus import command_not_found
 from diskmanagement.helpmenu import disks_help, sas_submenu_help
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from deepnexus.utils import load_config, get_prompt_text, clear_screen, status_message, Status
-from diskmanagement.disks import show_all_disks, show_mounted_disks, prepare_new_disk, locate_disk, mount_disk
+from diskmanagement.disks import show_all_disks, prepare_new_disk, locate_disk, mount_disk
 from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
 
 def disks_menu(app_config):
@@ -31,10 +31,7 @@ def disks_menu(app_config):
                 else:
                     print(f"{status_message(Status.ERROR)} SAS Functionality Disabled!")
                     print()
-            elif cmd == "show mounted":
-                print()
-                show_mounted_disks(disks_config)
-            elif cmd == "show all":
+            elif cmd == "show":
                 print()
                 show_all_disks(disks_config)
             elif cmd.startswith("locate disk"):

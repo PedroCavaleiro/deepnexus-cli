@@ -19,6 +19,7 @@ def deepnexus_help():
     help_text = f"""
 Available commands:
   disks               - Enter SAS submenu
+  temperatures, temps - Shows system temperatures
   shell               - Open shell
   update              - Updates to the latest version
   settings            - Open settings menu

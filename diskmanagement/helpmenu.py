@@ -5,8 +5,7 @@ def disks_help():
 Available commands:
   sas                 - Enter SAS submenu
   initialize disk     - Initializes a disk (interactive)
-  show mounted        - Show only mounted disks from the config
-  show all            - Show all disks from the config, grouped by mount state
+  show                - Show all disks from the config, grouped by mount state
   locate disk         - Interactively locate a disk
   locate disk ID      - Locate a specific disk by mount ID (e.g., sda)
   {common_commands_with_back()}

@@ -7,7 +7,9 @@ from pathlib import Path
 from tabulate import tabulate
 from deepnexus.utils import status_message, Status, load_config, get_available_mounts
 from deepnexus.escape import Ansi
-from deepnexus.vars import APP_CONFIG_PATH
+from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH
+import subprocess
+import re
 font = Ansi.escape
 
 def show_all_disks(config):
@@ -25,24 +27,6 @@ def show_all_disks(config):
             print(tabulate(data, headers=["Status", "Label", "Mount Point", "Partition UUID", "Physical Location", "SAS Card", "SAS Slot"]))
         else:
             print("None")
-    else:
-        print(f"{status_message(Status.ERROR)} There are no configured disks")
-    print()
-
-def show_mounted_disks(config):
-    if len(config) > 0:
-        mounted_paths = parse_mount_targets()
-        data = []
-        for disk in config:
-            mount_point = f"/mnt/{disk['mnt']}"
-            normalized_mount = os.path.normpath(os.path.realpath(mount_point))
-            status_icon = f"{font('fg_green')}   ●  {font('reset')}"
-            if normalized_mount in mounted_paths:
-                data.append([status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] != -1 else "N/A", disk['slt'] if disk['slt'] != -1 else "N/A"])
-        if data:
-            print(tabulate(data, headers=["Status", "Label", "Mount Point", "Partition UUID", "Physical Location", "SAS Card", "SAS Slot"]))
-        else:
-            print("No configured disks are currently mounted.")
     else:
         print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
@@ -129,7 +113,6 @@ def mount_disk(config):
     result = run_command(f"mount /dev/{target_partition} /mnt/{mount_point.replace('/mnt/', '')}")
     print(result)
     print(f"{status_message(Status.SUCCESS)} Disk mounted at /mnt/{mount_point.replace('/mnt/', '')}.")
-
 
 def prepare_new_disk(config):
 
@@ -278,7 +261,8 @@ def prepare_new_disk(config):
             "mnt": mount_point,
             "card": card,
             "slt": slot,
-            "uuid": uuid
+            "uuid": uuid,
+            "dev": disk.replace("/dev/", "")
         })
 
         with open(config_path, "w") as f:
@@ -325,3 +309,39 @@ def run_locate_disk_action(mount_id, card, slot):
     input()
     end_locate_drive(card, slot)
     print("Indicator stopped.")
+
+def get_smart_temperatures():
+    disks = load_config(DISKS_CONFIG_PATH)
+    temperatures = {}
+    for disk in disks:
+        if 'dev' not in disk:
+            print(f"Warning: Disk entry missing 'dev' field. Skipping: {disk}")
+            continue
+        
+        dev = f"/dev/{disk['dev']}"
+        name = disk["label"]
+
+        try:
+            result = subprocess.run(
+                ["smartctl", "-A", dev],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                check=True
+            )
+            output = result.stdout
+
+            # Match known temperature attributes
+            for line in output.splitlines():
+                if re.search(r'Temperature_Celsius|Temperature_Internal|Temperature', line):
+                    parts = line.split()
+                    if len(parts) >= 10 and parts[9].isdigit():
+                        temperatures[name] = int(parts[9])
+                        break
+                    elif len(parts) >= 2 and parts[1].isdigit():
+                        temperatures[name] = int(parts[1])
+                        break
+        except Exception as e:
+            print(f"smartctl failed for {dev}: {e}")
+            temperatures[name] = None
+    return temperatures
