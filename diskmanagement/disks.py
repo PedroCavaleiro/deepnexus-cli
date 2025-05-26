@@ -314,7 +314,7 @@ def get_smart_temperatures():
     disks = load_config(DISKS_CONFIG_PATH)
     temperatures = {}
     for disk in disks:
-        dev = disk["dev"]
+        dev = f"/dev/{disk['dev']}"
         name = disk["label"]
 
         try:
