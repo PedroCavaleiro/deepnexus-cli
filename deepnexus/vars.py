@@ -1,6 +1,8 @@
 DISKS_CONFIG_PATH = "./configs/disks.json"
 APP_CONFIG_PATH = "./configs/settings.json"
 
+STORCLI = "/opt/MegaRAID/storcli/storcli64"
+
 COLORS = {
     "green": "\033[92m",
     "red": "\033[91m",

@@ -29,24 +29,6 @@ def show_all_disks(config):
         print(f"{status_message(Status.ERROR)} There are no configured disks")
     print()
 
-def show_mounted_disks(config):
-    if len(config) > 0:
-        mounted_paths = parse_mount_targets()
-        data = []
-        for disk in config:
-            mount_point = f"/mnt/{disk['mnt']}"
-            normalized_mount = os.path.normpath(os.path.realpath(mount_point))
-            status_icon = f"{font('fg_green')}   ●  {font('reset')}"
-            if normalized_mount in mounted_paths:
-                data.append([status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] != -1 else "N/A", disk['slt'] if disk['slt'] != -1 else "N/A"])
-        if data:
-            print(tabulate(data, headers=["Status", "Label", "Mount Point", "Partition UUID", "Physical Location", "SAS Card", "SAS Slot"]))
-        else:
-            print("No configured disks are currently mounted.")
-    else:
-        print(f"{status_message(Status.ERROR)} There are no configured disks")
-    print()
-
 def mount_disk(config):
     print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
     lsblk_output = run_command("lsblk -nr -o NAME,MOUNTPOINT,SIZE")
@@ -129,7 +111,6 @@ def mount_disk(config):
     result = run_command(f"mount /dev/{target_partition} /mnt/{mount_point.replace('/mnt/', '')}")
     print(result)
     print(f"{status_message(Status.SUCCESS)} Disk mounted at /mnt/{mount_point.replace('/mnt/', '')}.")
-
 
 def prepare_new_disk(config):
 
@@ -278,7 +259,8 @@ def prepare_new_disk(config):
             "mnt": mount_point,
             "card": card,
             "slt": slot,
-            "uuid": uuid
+            "uuid": uuid,
+            "dev": disk.replace("/dev/", "")
         })
 
         with open(config_path, "w") as f:

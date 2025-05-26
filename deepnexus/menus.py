@@ -5,6 +5,7 @@ from deepnexus.updater import update_tool
 from deepnexus.settings import settings_menu
 from diskmanagement.menu import disks_menu
 from deepnexus.shell_launcher import open_shell
+from deepnexus.temperature import show_temperatures
 
 def main_menu():
     app_config = load_config(APP_CONFIG_PATH)
@@ -28,6 +29,9 @@ def main_menu():
                 settings_menu()
                 print()
                 app_config = load_config(APP_CONFIG_PATH)
+            elif cmd == "temperatures":
+                show_temperatures()
+                print()
             elif cmd == "":
                 continue
             else:

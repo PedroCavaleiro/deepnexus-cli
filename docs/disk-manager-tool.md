@@ -10,6 +10,7 @@ The structure of the file is the following
   {
     "phy": "0-0",
     "mnt": "sda",
+    "dev": "",
     "card": 1,
     "slt": 3,
     "label": "EXOS X18",
@@ -30,8 +31,7 @@ The structure of the file is the following
 
 * **sas**: Enter the SAS sub-menu
 * **initialize disk**: Initializes a disk (remember this match my needs might not be the same for you, read more [here](#initialize-disk-command))
-* **show mounted**: Shows all disks, configured within `disks.json` that are mounted
-* **show all**: Shows all disks, configured within `disks.json`
+* **show**: Shows all disks, configured within `disks.json`
 
 ### SAS Sub-menu
 
