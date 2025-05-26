@@ -10,6 +10,7 @@ from deepnexus.escape import Ansi
 from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH
 import subprocess
 import re
+from collections import defaultdict
 font = Ansi.escape
 
 def show_all_disks(config):
@@ -317,7 +318,7 @@ def get_smart_temperatures():
         if 'dev' not in disk:
             print(f"Warning: Disk entry missing 'dev' field. Skipping: {disk}")
             continue
-        
+
         dev = f"/dev/{disk['dev']}"
         name = disk["label"]
 
@@ -345,3 +346,43 @@ def get_smart_temperatures():
             print(f"smartctl failed for {dev}: {e}")
             temperatures[name] = None
     return temperatures
+
+def print_tree(data, prefix=""):
+    keys = list(data.keys())
+    for i, key in enumerate(keys):
+        is_last = i == len(keys) - 1
+        branch = "└── " if is_last else "├── "
+        print(f"{prefix}{branch}{key}")
+        if isinstance(data[key], list):
+            for j, item in enumerate(data[key]):
+                sub_prefix = prefix + ("    " if is_last else "│   ")
+                sub_branch = "└── " if j == len(data[key]) - 1 else "├── "
+                print(f"{sub_prefix}{sub_branch}● {item['label']}")
+                details_prefix = sub_prefix + ("    " if j == len(data[key]) - 1 else "│   ")
+                print(f"{details_prefix}├── Mount Point: /mnt/{item['mnt']}")
+                print(f"{details_prefix}├── Partition UUID: {item['uuid']}")
+                print(f"{details_prefix}├── Physical Location: {item['phy']}")
+                print(f"{details_prefix}├── Device: {item['dev']}")
+                print(f"{details_prefix}└── SAS Slot: {item['slt']}")
+
+def show_disks_tree(config):
+    if not config:
+        print("There are no configured disks")
+        return
+
+    grouped = defaultdict(list)
+    for disk in config:
+        if disk.get("card", -1) == -1 or disk.get("slt", -1) == -1:
+            continue
+        grouped[disk["card"]].append(disk)
+
+    if not grouped:
+        print("No valid disks with SAS card and slot info")
+        return
+
+    output_tree = {}
+    for card in sorted(grouped.keys()):
+        output_tree[f"SAS Card {card}"] = grouped[card]
+
+    print("Disks")
+    print_tree(output_tree)
