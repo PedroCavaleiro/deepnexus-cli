@@ -314,6 +314,10 @@ def get_smart_temperatures():
     disks = load_config(DISKS_CONFIG_PATH)
     temperatures = {}
     for disk in disks:
+        if 'dev' not in disk:
+            print(f"Warning: Disk entry missing 'dev' field. Skipping: {disk}")
+            continue
+        
         dev = f"/dev/{disk['dev']}"
         name = disk["label"]
 

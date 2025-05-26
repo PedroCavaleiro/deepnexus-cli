@@ -3,16 +3,11 @@ import re
 import subprocess
 from diskmanagement.disks import get_smart_temperatures
 
-def show_temperatures():
-    temps = get_storcli_temperatures()
-    for ctrl, temp in temps.items():
-        print(f"{ctrl}: {temp}")
-
 def build_temperature_tree():
     return {
         "SAS": get_storcli_temperatures(),
         "Disks": get_smart_temperatures(),
-        **get_sensor_temperatures()
+        "Sensors": get_sensor_temperatures()
     }
 
 def print_tree(data, prefix=""):
