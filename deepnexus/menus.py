@@ -30,6 +30,7 @@ def main_menu():
                 print()
                 app_config = load_config(APP_CONFIG_PATH)
             elif cmd == "temperatures" or cmd == "temps":
+                print()
                 print(app_config["prompt"]["hostname"]["name"])
                 tree = build_temperature_tree()
                 print_tree(tree)
