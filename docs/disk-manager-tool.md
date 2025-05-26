@@ -10,7 +10,7 @@ The structure of the file is the following
   {
     "phy": "0-0",
     "mnt": "sda",
-    "dev": "",
+    "dev": "sda",
     "card": 1,
     "slt": 3,
     "label": "EXOS X18",
@@ -24,6 +24,7 @@ The structure of the file is the following
 * **slt**: The SAS slot on which the disk is located
 * **label**: This label will also be written into the partition label
 * **uuid**: The UUID of the partition
+* **dev**: The disk handle eg: sda (these are located inside /dev/)
 
 ## Supported Commands 
 
