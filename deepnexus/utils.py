@@ -96,3 +96,18 @@ def get_available_mounts():
 def is_disk_mounted(mounted_paths, mount_point):
     normalized_mount = os.path.normpath(os.path.realpath(mount_point))
     return normalized_mount in mounted_paths
+
+def get_fstab_uuids():
+    fstab_uuids = set()
+    try:
+        with open("/etc/fstab", "r") as fstab:
+            for line in fstab:
+                line = line.strip()
+                if line.startswith("UUID="):
+                    parts = line.split()
+                    if parts:
+                        uuid = parts[0].replace("UUID=", "")
+                        fstab_uuids.add(uuid)
+    except Exception as e:
+        print(f"Error reading /etc/fstab: {e}")
+    return fstab_uuids

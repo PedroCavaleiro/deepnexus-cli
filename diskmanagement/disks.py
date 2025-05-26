@@ -1,4 +1,4 @@
-from deepnexus.utils import run_command, parse_mount_targets, is_disk_mounted
+from deepnexus.utils import run_command, parse_mount_targets, is_disk_mounted, get_fstab_uuids
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from diskmanagement.sas import show_sas_all, start_locate_drive, end_locate_drive
 import os
@@ -348,7 +348,7 @@ def get_smart_temperatures():
 
 def print_tree(data, prefix=""):
     mounted_paths = parse_mount_targets()
-
+    fstab_uuids = get_fstab_uuids()
     keys = list(data.keys())
     for i, key in enumerate(keys):
         is_last = i == len(keys) - 1
@@ -366,6 +366,10 @@ def print_tree(data, prefix=""):
                 print(f"{details_prefix}├── Partition UUID: {item['uuid']}")
                 print(f"{details_prefix}├── Physical Location: {item['phy']}")
                 print(f"{details_prefix}├── Device: {item['dev']}")
+                if item['uuid'] in fstab_uuids:
+                    print(f"{details_prefix}├── Automount: YES")
+                else:
+                    print(f"{details_prefix}├── Automount: NO")
                 print(f"{details_prefix}└── SAS Slot: {item['slt']}")
 
 def show_disks_tree(config):
