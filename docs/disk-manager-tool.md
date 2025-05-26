@@ -24,7 +24,7 @@ The structure of the file is the following
 * **slt**: The SAS slot on which the disk is located
 * **label**: This label will also be written into the partition label
 * **uuid**: The UUID of the partition
-* **dev**: The disk handle eg: sda (these are located inside /dev/)
+* **dev**: The disk handle e.g.: sda (these are located inside /dev/)
 
 ## Supported Commands 
 
