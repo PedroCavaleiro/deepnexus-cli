@@ -29,7 +29,7 @@ def end_locate_drive(card, slot):
 def get_storcli_temperatures():
     try:
         result = subprocess.run(
-            ["./storcli64", "/call", "show", "temperature"],
+            [STORCLI, "/call", "show", "temperature"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
