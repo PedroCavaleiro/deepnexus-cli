@@ -1,4 +1,4 @@
-from deepnexus.utils import run_command, parse_mount_targets
+from deepnexus.utils import run_command, parse_mount_targets, is_disk_mounted
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from diskmanagement.sas import show_sas_all, start_locate_drive, end_locate_drive
 import os
@@ -18,9 +18,8 @@ def show_all_disks(config):
         mounted_paths = parse_mount_targets()
         data = []
         for disk in config:
-            mount_point = f"/mnt/{disk['mnt']}"
-            normalized_mount = os.path.normpath(os.path.realpath(mount_point))
-            is_mounted = normalized_mount in mounted_paths
+            mount_point = f"/mnt/{disk['mnt']}"            
+            is_mounted = is_disk_mounted(mounted_paths, mount_point)
             status_icon = f"{font('fg_green')}   ●  {font('reset')}" if is_mounted else f"{font('fg_red')}   ●  {font('reset')}"
             entry = [status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] != -1 else "N/A", disk['slt'] if disk['slt'] != -1 else "N/A"]
             data.append(entry)
@@ -348,6 +347,8 @@ def get_smart_temperatures():
     return temperatures
 
 def print_tree(data, prefix=""):
+    mounted_paths = parse_mount_targets()
+
     keys = list(data.keys())
     for i, key in enumerate(keys):
         is_last = i == len(keys) - 1
@@ -355,9 +356,11 @@ def print_tree(data, prefix=""):
         print(f"{prefix}{branch}{key}")
         if isinstance(data[key], list):
             for j, item in enumerate(data[key]):
+                is_mounted = is_disk_mounted(mounted_paths, f"/mnt/{item['mnt']}")
+                status_icon = f"{font('fg_green')}● {font('reset')}" if is_mounted else f"{font('fg_red')}● {font('reset')}"
                 sub_prefix = prefix + ("    " if is_last else "│   ")
                 sub_branch = "└── " if j == len(data[key]) - 1 else "├── "
-                print(f"{sub_prefix}{sub_branch}● {item['label']}")
+                print(f"{sub_prefix}{sub_branch}{status_icon} {item['label']}")
                 details_prefix = sub_prefix + ("    " if j == len(data[key]) - 1 else "│   ")
                 print(f"{details_prefix}├── Mount Point: /mnt/{item['mnt']}")
                 print(f"{details_prefix}├── Partition UUID: {item['uuid']}")

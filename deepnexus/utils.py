@@ -92,3 +92,7 @@ def get_available_mounts():
         mounted_points = set(line.split()[1] for line in f)
         
     return [d for d in all_mnt_dirs if d not in mounted_points]
+
+def is_disk_mounted(mounted_paths, mount_point):
+    normalized_mount = os.path.normpath(os.path.realpath(mount_point))
+    return normalized_mount in mounted_paths
