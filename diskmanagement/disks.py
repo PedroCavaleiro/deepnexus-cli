@@ -365,12 +365,13 @@ def print_tree(data, prefix=""):
                 print(f"{details_prefix}├── Mount Point: /mnt/{item['mnt']}")
                 print(f"{details_prefix}├── Partition UUID: {item['uuid']}")
                 print(f"{details_prefix}├── Physical Location: {item['phy']}")
-                print(f"{details_prefix}├── Device: {item['dev']}")
+                print(f"{details_prefix}├── Device: /dev/{item['dev']}")
                 if item['uuid'] in fstab_uuids:
                     print(f"{details_prefix}├── Automount: YES")
                 else:
                     print(f"{details_prefix}├── Automount: NO")
                 print(f"{details_prefix}└── SAS Slot: {item['slt']}")
+    print()
 
 def show_disks_tree(config):
     if not config:
