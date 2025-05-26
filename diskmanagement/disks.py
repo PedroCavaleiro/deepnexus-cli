@@ -7,7 +7,9 @@ from pathlib import Path
 from tabulate import tabulate
 from deepnexus.utils import status_message, Status, load_config, get_available_mounts
 from deepnexus.escape import Ansi
-from deepnexus.vars import APP_CONFIG_PATH
+from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH
+import subprocess
+import re
 font = Ansi.escape
 
 def show_all_disks(config):
@@ -307,3 +309,35 @@ def run_locate_disk_action(mount_id, card, slot):
     input()
     end_locate_drive(card, slot)
     print("Indicator stopped.")
+
+def get_smart_temperatures():
+    disks = load_config(DISKS_CONFIG_PATH)
+    temperatures = {}
+    for disk in disks:
+        dev = disk["dev"]
+        name = disk["label"]
+
+        try:
+            result = subprocess.run(
+                ["smartctl", "-A", dev],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                check=True
+            )
+            output = result.stdout
+
+            # Match known temperature attributes
+            for line in output.splitlines():
+                if re.search(r'Temperature_Celsius|Temperature_Internal|Temperature', line):
+                    parts = line.split()
+                    if len(parts) >= 10 and parts[9].isdigit():
+                        temperatures[name] = int(parts[9])
+                        break
+                    elif len(parts) >= 2 and parts[1].isdigit():
+                        temperatures[name] = int(parts[1])
+                        break
+        except Exception as e:
+            print(f"smartctl failed for {dev}: {e}")
+            temperatures[name] = None
+    return temperatures

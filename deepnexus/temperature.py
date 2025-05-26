@@ -1,6 +1,7 @@
 from diskmanagement.sas import get_storcli_temperatures
 import re
 import subprocess
+from diskmanagement.disks import get_smart_temperatures
 
 def show_temperatures():
     temps = get_storcli_temperatures()
@@ -10,6 +11,7 @@ def show_temperatures():
 def build_temperature_tree():
     return {
         "SAS": get_storcli_temperatures(),
+        "Disks": get_smart_temperatures(),
         **get_sensor_temperatures()
     }
 
