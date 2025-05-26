@@ -390,7 +390,7 @@ def show_disks_tree(config):
 
     output_tree = {}
     for card in sorted(grouped.keys()):
-        output_tree[f"SAS Card {card}"] = grouped[card]
+        output_tree[f"SAS Controller {card}"] = grouped[card]
 
     print("Disks")
     print_tree(output_tree)
