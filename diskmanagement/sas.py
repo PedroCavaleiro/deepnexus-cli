@@ -28,9 +28,8 @@ def end_locate_drive(card, slot):
 
 def get_storcli_temperatures():
     try:
-        # Run the storcli command
         result = subprocess.run(
-            [STORCLI, "/call", "show", "temperature"],
+            ["./storcli64", "/call", "show", "temperature"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -47,7 +46,8 @@ def get_storcli_temperatures():
             for line in lines:
                 match = re.search(r'ROC temperature\(Degree Celsius\)\s+(\d+)', line)
                 if match:
-                    temperatures[controller_id] = int(match.group(1))
+                    temp = int(match.group(1))
+                    temperatures[f"Controller {controller_id}"] = temp
                     break
 
         return temperatures
