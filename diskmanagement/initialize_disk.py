@@ -192,6 +192,8 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
 
     
     floats = []
+
+    layout_items.append(Window(height=D(weight=1)))
     layout_items.append(Button(
         text="Apply",
         handler=lambda: show_confirmation_dialog(
@@ -199,9 +201,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
             lambda: (get_app().layout.focus(dialog), get_app().invalidate(), accept()),
             lambda: (get_app().layout.focus(dialog), get_app().invalidate())
         )
-    ))
-    #layout_items.append(output_window)
-    layout_items.append(spacer)
+    ))    
     layout_items.append(Label("Press ESC to exit"))
 
     body = HSplit(layout_items, width=D(), height=D())
