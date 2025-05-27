@@ -7,6 +7,7 @@ Available commands:
   initialize disk     - Initializes a disk (interactive)
   show                - If SAS enabled shows SAS connected disks otherwise shows all disks
   show all            - Shows all connected disks
+  fstab               - Shows the fstab menu
   locate disk         - Interactively locate a disk
   locate disk ID      - Locate a specific disk by mount ID (e.g., sda)
   {common_commands_with_back()}
