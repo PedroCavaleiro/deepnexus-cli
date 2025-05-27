@@ -1,9 +1,14 @@
-import curses
+from prompt_toolkit import Application
+from prompt_toolkit.layout import Layout
+from prompt_toolkit.widgets import Button, Dialog, Label, TextArea, Box, Frame, RadioList
+from prompt_toolkit.layout.containers import HSplit, VSplit, Window
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.application.current import get_app
+from prompt_toolkit.styles import Style
 import os
 import subprocess
 import json
-from uuid import UUID
-from deepnexus.utils import run_command, load_config
+from deepnexus.utils import run_command
 from deepnexus.vars import APP_CONFIG_PATH
 
 def list_unmounted_disks():
@@ -33,99 +38,95 @@ def add_to_fstab(uuid, mount_point):
     with open('/etc/fstab', 'a') as f:
         f.write(fstab_entry + '\n')
 
-def interactive_disk_setup(stdscr, app_config, disk_config, dry_run=False):
-    curses.curs_set(0)
-    curses.use_default_colors()
-    stdscr.clear()
-    unmounted_disks = list_unmounted_disks()
-    current_idx = 0
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+def interactive_disk_setup(app_config, disk_config, dry_run=False):
+    disks = list_unmounted_disks()
+    selected_disk = [disks[0]] if disks else ["/dev/sdx"]
 
-    while True:
-        stdscr.clear()
-        stdscr.addstr(0, 0, "Select a disk to initialize")
+    disk_radio = RadioList([(d, d) for d in disks])
+    label_input = TextArea(prompt='Label (optional): ', height=1)
+    mount_input = TextArea(prompt='Mount point name (under /mnt/): ', height=1)
+    phy_input = TextArea(prompt='Physical location (optional): ', height=1)
+    fstab_input = RadioList([(True, 'Yes'), (False, 'No')])
+    config_input = RadioList([(True, 'Yes'), (False, 'No')])
+    sas_card_input = TextArea(prompt='SAS controller: ', height=1)
+    sas_slot_input = TextArea(prompt='SAS slot: ', height=1)
 
-        for i, disk in enumerate(unmounted_disks):
-            if i == current_idx:
-                stdscr.attron(curses.color_pair(1))
-                stdscr.addstr(i + 2, 2, disk)
-                stdscr.attroff(curses.color_pair(1))
-            else:
-                stdscr.addstr(i + 2, 2, disk)
+    messages = TextArea(style='class:output-field', height=2, read_only=True)
 
-        stdscr.addstr(len(unmounted_disks) + 4, 0, "Use ↑/↓ to navigate, Enter to select, q to quit")
-        stdscr.refresh()
+    def accept():
+        disk = disk_radio.current_value
+        label = label_input.text.strip() or "NO LABEL"
+        mount_name = mount_input.text.strip()
+        mount_point = f"/mnt/{mount_name}"
+        phy = phy_input.text.strip() or "Unknown"
+        add_fstab = fstab_input.current_value
+        add_config = config_input.current_value
+        card = int(sas_card_input.text.strip()) if app_config.get("enable_sas") else -1
+        slt = int(sas_slot_input.text.strip()) if app_config.get("enable_sas") else -1
 
-        key = stdscr.getch()
-        if key == curses.KEY_UP:
-            current_idx = (current_idx - 1) % len(unmounted_disks)
-        elif key == curses.KEY_DOWN:
-            current_idx = (current_idx + 1) % len(unmounted_disks)
-        elif key == 27:  # ESC key
-            break
-        elif key == ord('\n'):
-            disk = unmounted_disks[current_idx]
-            curses.echo()
+        os.makedirs(mount_point, exist_ok=True)
 
-            stdscr.clear()
-            stdscr.addstr(0, 0, "Enter label (optional): ")
-            label = stdscr.getstr().decode().strip() or "NO LABEL"
+        if not dry_run:
+            partition = disk_init(disk, label)
+            uuid = get_partition_uuid(partition)
+            run_command(f"mount {partition} {mount_point}")
+            if add_fstab:
+                add_to_fstab(uuid, mount_point)
+        else:
+            partition = disk + '1'
+            uuid = 'dry-run-uuid'
 
-            stdscr.addstr(1, 0, "Available mount points:")
-            mounts = list_available_mounts()
-            for i, m in enumerate(mounts):
-                stdscr.addstr(2 + i, 2, m)
-            stdscr.addstr(2 + len(mounts), 0, "Enter mount point name (will be under /mnt/): ")
-            mount_point = stdscr.getstr().decode().strip()
-            if not os.path.exists(f"/mnt/{mount_point}"):
-                os.makedirs(f"/mnt/{mount_point}")
+        if add_config:
+            disk_config.append({
+                "label": label,
+                "phy": phy,
+                "mnt": mount_name,
+                "card": card,
+                "slt": slt,
+                "uuid": uuid,
+                "dev": disk.replace("/dev/", "")
+            })
 
-            stdscr.addstr(4 + len(mounts), 0, "Add to /etc/fstab? (y/n): ")
-            add_fstab = stdscr.getstr().decode().strip().lower() == 'y'
+        messages.text = "Disk setup complete. Press ESC to exit."
 
-            stdscr.addstr(5 + len(mounts), 0, "Add to disk_config? (y/n): ")
-            add_config = stdscr.getstr().decode().strip().lower() == 'y'
+    layout_items = [
+        Label("Select a disk to initialize:"),
+        disk_radio,
+        label_input,
+        Label("Available mount points: " + ", ".join(list_available_mounts())),
+        mount_input,
+        Label("Add to /etc/fstab?"),
+        fstab_input,
+        Label("Add to disk_config?"),
+        config_input,
+        Label("Enter physical location (optional):"),
+        phy_input,
+    ]
 
-            stdscr.addstr(6 + len(mounts), 0, "Enter physical location (optional): ")
-            phy = stdscr.getstr().decode().strip() or "Unknown"
+    if app_config.get("enable_sas"):
+        layout_items += [
+            Label("Enter SAS controller number:"),
+            sas_card_input,
+            Label("Enter SAS slot number:"),
+            sas_slot_input,
+        ]
 
-            if app_config.get("enable_sas"):
-                stdscr.addstr(7 + len(mounts), 0, "Enter SAS controller number: ")
-                card = int(stdscr.getstr().decode().strip())
-                stdscr.addstr(8 + len(mounts), 0, "Enter SAS slot number: ")
-                slt = int(stdscr.getstr().decode().strip())
-            else:
-                card, slt = -1, -1
+    layout_items.append(Button(text="Apply", handler=accept))
+    layout_items.append(messages)
+    layout_items.append(Label("Press ESC to exit"))
 
-            stdscr.clear()
-            stdscr.addstr(0, 0, f"Initializing {disk}...")
-            stdscr.refresh()
+    root_container = Box(HSplit(layout_items), padding=1)
+    layout = Layout(container=root_container)
 
-            if not dry_run:
-                partition = disk_init(disk, label)
-                uuid = get_partition_uuid(partition)
-                run_command(f"mount {partition} /mnt/{mount_point}")
-                if add_fstab:
-                    add_to_fstab(uuid, f"/mnt/{mount_point}")
-            else:
-                partition = disk + '1'
-                uuid = "dry-run-uuid"
+    kb = KeyBindings()
 
-            if add_config:
-                disk_config.append({
-                    "label": label,
-                    "phy": phy,
-                    "mnt": mount_point,
-                    "card": card,
-                    "slt": slt,
-                    "uuid": uuid,
-                    "dev": disk.replace("/dev/", "")
-                })
+    @kb.add('escape')
+    def exit_(event):
+        event.app.exit()
 
-            stdscr.addstr(2, 0, "Disk setup complete. Press any key to continue...")
-            stdscr.getch()
-            break
+    app = Application(layout=layout, key_bindings=kb, full_screen=True, mouse_support=True)
+    app.run()
 
 def initialize_disk(disk_config, app_config):
     dry_run = True
-    curses.wrapper(interactive_disk_setup, app_config, disk_config, dry_run=dry_run)
+    interactive_disk_setup(app_config, disk_config, dry_run=dry_run)
