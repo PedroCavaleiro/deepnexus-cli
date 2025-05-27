@@ -61,7 +61,7 @@ def interactive_disk_setup(stdscr, app_config, disk_config, dry_run=False):
             current_idx = (current_idx - 1) % len(unmounted_disks)
         elif key == curses.KEY_DOWN:
             current_idx = (current_idx + 1) % len(unmounted_disks)
-        elif key == ord('q'):
+        elif key == 27:  # ESC key
             break
         elif key == ord('\n'):
             disk = unmounted_disks[current_idx]
