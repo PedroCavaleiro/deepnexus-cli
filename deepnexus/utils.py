@@ -5,6 +5,13 @@ from enum import Enum
 from deepnexus.escape import Ansi
 font = Ansi.escape
 
+def format_size(bytes_value):
+    for unit in ['B', 'K', 'M', 'G', 'T']:
+        if bytes_value < 1024.0:
+            return f"{bytes_value:.1f}{unit}"
+        bytes_value /= 1024.0
+    return f"{bytes_value:.1f}P"
+
 def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
 

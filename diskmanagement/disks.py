@@ -5,7 +5,7 @@ import os
 import json
 from pathlib import Path
 from tabulate import tabulate
-from deepnexus.utils import status_message, Status, load_config, get_available_mounts, get_fstab_uuids
+from deepnexus.utils import status_message, Status, load_config, get_available_mounts, get_fstab_uuids, format_size
 from deepnexus.escape import Ansi
 from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH, FSTAB_PATH, MOUNT_OPTIONS
 import subprocess
@@ -402,17 +402,20 @@ def show_disks_tree(config):
     print("Disks")
     print_tree(output_tree)
 
-def get_mounted_disks_under_mnt():
-    result = subprocess.run(['lsblk', '-o', 'MOUNTPOINT,UUID'], capture_output=True, text=True)
+def get_mounted_disks():
+    result = subprocess.run(['lsblk', '-b', '-o', 'MOUNTPOINT,UUID,SIZE'], capture_output=True, text=True)
     disks = []
     for line in result.stdout.splitlines()[1:]:
-        parts = line.strip().split()
-        if len(parts) == 2:
-            mount, uuid = parts
-            if mount.startswith("/mnt/"):
-                disks.append({"mount": mount, "uuid": uuid})
+        parts = line.strip().split(None, 2)
+        if len(parts) == 3:
+            mount, uuid, size = parts
+            if mount.startswith("/mnt/") and uuid != "":
+                disks.append({
+                    "mount": mount,
+                    "uuid": uuid,
+                    "size": format_size(int(size))
+                })
     return disks
-
 
 def toggle_fstab_entry(uuid, mount, present):
     lines = []
@@ -436,20 +439,20 @@ def build_lines(disks, fstab_uuids, selected_index):
         checked = "[x]" if disk["uuid"] in fstab_uuids else "[ ]"
         pointer = "=> " if i == selected_index else "   "
         tree_line = "└──" if i == len(disks) - 1 else "├──"
-        line = f"{pointer}{tree_line} {checked} {disk['mount']} (UUID={disk['uuid']})"
+        line = f"{pointer}{tree_line} {checked} {disk['mount']} {disk['size']} (UUID={disk['uuid']})"
         style = "class:highlight" if i == selected_index else ""
         lines.append((style, line))
     return FormattedText(lines)
 
-def run_fstab_menu():
-    disks = get_mounted_disks_under_mnt()
+def run_menu():
+    disks = get_mounted_disks()
     fstab_uuids = get_fstab_uuids()
-    selected = [0]  # Mutable container so it can be changed in closures
+    selected = [0]  # Mutable index
 
     def get_display_text():
         return build_lines(disks, fstab_uuids, selected[0])
 
-    text_control = FormattedTextControl(get_display_text)
+    text_control = FormattedTextControl(get_display_text, focusable=True)
     window = Window(content=text_control, always_hide_cursor=False)
     body = Frame(HSplit([window]), title="FSTAB Disk Manager")
 
