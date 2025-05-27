@@ -19,7 +19,7 @@ def disks_menu(app_config):
                 break
             elif cmd == "mount disk":
                 mount_disk(disks_config)
-            elif cmd == "initialize disk" or "init disk":
+            elif cmd == "initialize disk" or cmd == "init disk":
                 initialize_disk(disks_config, app_config)
             elif cmd == "back" or cmd == "..":
                 break
