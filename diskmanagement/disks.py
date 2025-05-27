@@ -402,10 +402,3 @@ def show_disks_tree(config):
 
     print("Disks")
     print_tree(output_tree)
-
-
-
-
-
-
-
