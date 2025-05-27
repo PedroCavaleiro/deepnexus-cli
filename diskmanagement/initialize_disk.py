@@ -115,8 +115,10 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     layout_items.append(messages)
     layout_items.append(Label("Press ESC to exit"))
 
-    root_container = Box(HSplit(layout_items), padding=1)
-    layout = Layout(container=root_container)
+    body = HSplit(layout_items)
+    dialog = Dialog(title="Interactive Disk Setup", body=body, buttons=[], width=80, with_background=False)
+
+    layout = Layout(container=dialog)
 
     kb = KeyBindings()
 
@@ -124,7 +126,9 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     def exit_(event):
         event.app.exit()
 
-    app = Application(layout=layout, key_bindings=kb, full_screen=True, mouse_support=True)
+    style = Style.from_dict({})
+
+    app = Application(layout=layout, key_bindings=kb, full_screen=True, mouse_support=True, style=style)
     app.run()
 
 def initialize_disk(disk_config, app_config):
