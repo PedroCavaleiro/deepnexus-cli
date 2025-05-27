@@ -444,7 +444,7 @@ def build_lines(disks, fstab_uuids, selected_index):
         lines.append((style, line))
     return FormattedText(lines)
 
-def run_menu():
+def run_fstab_menu():
     disks = get_mounted_disks()
     fstab_uuids = get_fstab_uuids()
     selected = [0]  # Mutable index
