@@ -5,11 +5,18 @@ import os
 import json
 from pathlib import Path
 from tabulate import tabulate
-from deepnexus.utils import status_message, Status, load_config, get_available_mounts
+from deepnexus.utils import status_message, Status, load_config, get_available_mounts, get_fstab_uuids
 from deepnexus.escape import Ansi
-from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH
+from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH, FSTAB_PATH, MOUNT_OPTIONS
 import subprocess
 import re
+from prompt_toolkit import Application
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.layout import Layout
+from prompt_toolkit.widgets import Frame
+from prompt_toolkit.layout.containers import HSplit, Window
+from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.layout.controls import FormattedTextControl
 from collections import defaultdict
 font = Ansi.escape
 
@@ -394,3 +401,82 @@ def show_disks_tree(config):
 
     print("Disks")
     print_tree(output_tree)
+
+def get_mounted_disks_under_mnt():
+    result = subprocess.run(['lsblk', '-o', 'MOUNTPOINT,UUID'], capture_output=True, text=True)
+    disks = []
+    for line in result.stdout.splitlines()[1:]:
+        parts = line.strip().split()
+        if len(parts) == 2:
+            mount, uuid = parts
+            if mount.startswith("/mnt/"):
+                disks.append({"mount": mount, "uuid": uuid})
+    return disks
+
+
+def toggle_fstab_entry(uuid, mount, present):
+    lines = []
+    if os.path.exists(FSTAB_PATH):
+        with open(FSTAB_PATH, "r") as f:
+            lines = f.readlines()
+
+    new_line = f"UUID={uuid} {mount} {MOUNT_OPTIONS}\n"
+
+    if present:
+        lines = [line for line in lines if f"UUID={uuid}" not in line]
+    else:
+        lines.append(new_line)
+
+    with open(FSTAB_PATH, "w") as f:
+        f.writelines(lines)
+
+def build_lines(disks, fstab_uuids, selected_index):
+    lines = [("class:title", "Disks\n")]
+    for i, disk in enumerate(disks):
+        checked = "[x]" if disk["uuid"] in fstab_uuids else "[ ]"
+        pointer = "=> " if i == selected_index else "   "
+        tree_line = "└──" if i == len(disks) - 1 else "├──"
+        line = f"{pointer}{tree_line} {checked} {disk['mount']} (UUID={disk['uuid']})"
+        style = "class:highlight" if i == selected_index else ""
+        lines.append((style, line))
+    return FormattedText(lines)
+
+def run_fstab_menu():
+    disks = get_mounted_disks_under_mnt()
+    fstab_uuids = get_fstab_uuids()
+    selected = [0]  # Mutable container so it can be changed in closures
+
+    def get_display_text():
+        return build_lines(disks, fstab_uuids, selected[0])
+
+    text_control = FormattedTextControl(get_display_text)
+    window = Window(content=text_control, always_hide_cursor=False)
+    body = Frame(HSplit([window]), title="FSTAB Disk Manager")
+
+    kb = KeyBindings()
+
+    @kb.add("up")
+    def up(event):
+        selected[0] = (selected[0] - 1) % len(disks)
+
+    @kb.add("down")
+    def down(event):
+        selected[0] = (selected[0] + 1) % len(disks)
+
+    @kb.add(" ")
+    def toggle(event):
+        disk = disks[selected[0]]
+        uuid = disk["uuid"]
+        mount = disk["mount"]
+        present = uuid in fstab_uuids
+        toggle_fstab_entry(uuid, mount, present)
+        fstab_uuids.clear()
+        fstab_uuids.update(get_fstab_uuids())
+
+    @kb.add("q")
+    @kb.add("escape")
+    def exit_app(event):
+        event.app.exit()
+
+    app = Application(layout=Layout(body), key_bindings=kb, full_screen=False)
+    app.run()
