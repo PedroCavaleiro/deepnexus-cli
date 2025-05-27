@@ -39,7 +39,7 @@ def interactive_disk_setup(stdscr, app_config, disk_config, dry_run=False):
     stdscr.bkgd(' ', curses.color_pair(0))
     unmounted_disks = list_unmounted_disks()
     current_idx = 0
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    #curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
     while True:
         stdscr.clear()
