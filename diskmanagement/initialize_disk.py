@@ -239,8 +239,6 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         "dialog.frame": "fg:#ffffff",
         "button": "bg:#444444 #ffffff",
         "button.focused": "bg:#666666 #ffffff",
-        
-        "text-area": "bg:",
         "output-field": "bg:",
     })
 
