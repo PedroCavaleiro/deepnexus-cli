@@ -18,6 +18,7 @@ from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.layout.controls import FormattedTextControl
 from collections import defaultdict
+import asyncio
 font = Ansi.escape
 
 def show_all_disks(config):
@@ -434,20 +435,22 @@ def toggle_fstab_entry(uuid, mount, present):
         f.writelines(lines)
 
 def build_lines(disks, fstab_uuids, selected_index):
-    lines = [("class:title", "Disks\n")]
+    lines = []
     for i, disk in enumerate(disks):
         checked = "[x]" if disk["uuid"] in fstab_uuids else "[ ]"
         pointer = "=> " if i == selected_index else "   "
-        tree_line = "└──" if i == len(disks) - 1 else "├──"
-        line = f"{pointer}{tree_line} {checked} {disk['mount']} {disk['size']} (UUID={disk['uuid']})"
+        line = f"{pointer}{checked} {disk['mount']} ({disk['size']}) UUID={disk['uuid']}"
         style = "class:highlight" if i == selected_index else ""
-        lines.append((style, line))
+        lines.append((style, line + "\n"))
     return FormattedText(lines)
 
 def run_fstab_menu():
+    asyncio.run(run_fstab_menu_async())
+
+async def run_fstab_menu_async():
     disks = get_mounted_disks()
     fstab_uuids = get_fstab_uuids()
-    selected = [0]  # Mutable index
+    selected = [0]
 
     def get_display_text():
         return build_lines(disks, fstab_uuids, selected[0])
@@ -481,5 +484,5 @@ def run_fstab_menu():
     def exit_app(event):
         event.app.exit()
 
-    app = Application(layout=Layout(body), key_bindings=kb, full_screen=False)
-    app.run()
+    app = Application(layout=Layout(body), key_bindings=kb, full_screen=True)
+    await app.run_async()
