@@ -204,7 +204,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     layout_items.append(spacer)
     layout_items.append(Label("Press ESC to exit"))
 
-    body = HSplit(layout_items, width=D())
+    body = HSplit(layout_items, width=D(), height=D())
     dialog = Dialog(title="Disk Initialization", body=body, buttons=[], width=80, with_background=False)
     
     root_container = FloatContainer(
