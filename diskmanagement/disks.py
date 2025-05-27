@@ -460,7 +460,7 @@ async def run_fstab_menu_async():
     footer = Window(height=1, content=FormattedTextControl("Press (space) to toggle or q to quit"))
 
     root_container = HSplit([disk_window, footer])
-    body = Frame(root_container, title="FSTAB Disk Manager")
+    body = Frame(root_container, title="FSTAB Manager")
 
     kb = KeyBindings()
 
