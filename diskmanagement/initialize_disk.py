@@ -190,7 +190,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     
     def get_sas_slot_text():
         value = sas_slot_value[0]
-        text = f"SAS Controler: {value}" if value != -1 else "SAS Slot: None"
+        text = f"SAS Slot: {value}" if value != -1 else "SAS Slot: None"
         return FormattedText([("white", text)])
 
     def accept():
