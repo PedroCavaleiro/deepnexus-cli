@@ -187,6 +187,11 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         value = sas_controller_value[0]
         text = f"SAS Controler: {value}" if value != -1 else "SAS Controller: None"
         return FormattedText([("white", text)])
+    
+    def get_sas_slot_text():
+        value = sas_slot_value[0]
+        text = f"SAS Controler: {value}" if value != -1 else "SAS Slot: None"
+        return FormattedText([("white", text)])
 
     def accept():
         show_log_popup(floats, output_control, on_close=lambda: get_app().exit())
@@ -232,7 +237,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     mount_label_window = Window(content=mount_label_control, height=1)
     sas_controller_label_control = FormattedTextControl(text=get_sas_controller_text)
     sas_controller_label_window = Window(content=sas_controller_label_control, height=1)
-    sas_slot_label_control = FormattedTextControl(text=get_sas_controller_text)
+    sas_slot_label_control = FormattedTextControl(text=get_sas_slot_text)
     sas_slot_label_window = Window(content=sas_slot_label_control, height=1)
 
     layout_items = [
