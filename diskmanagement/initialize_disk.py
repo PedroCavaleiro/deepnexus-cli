@@ -41,7 +41,14 @@ def list_unmounted_disks():
 def list_available_mounts():
     if not os.path.exists('/mnt'):
         os.makedirs('/mnt')
-    return [d for d in os.listdir('/mnt') if os.path.isdir(f"/mnt/{d}")]
+
+    # Get all active mount points
+    mounted = subprocess.check_output(['lsblk', '-nr', '-o', 'MOUNTPOINT']).decode().splitlines()
+    mounted = set(filter(None, mounted))  # Remove empty lines
+
+    # Check each /mnt subdirectory to see if it's not actively mounted
+    return [d for d in os.listdir('/mnt')
+        if os.path.isdir(f"/mnt/{d}") and f"/mnt/{d}" not in mounted]
 
 def get_partition_uuid(partition):
     return run_command(f"blkid -s UUID -o value {partition}")
