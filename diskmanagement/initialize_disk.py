@@ -11,15 +11,32 @@ from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.layout.margins import ScrollbarMargin
 from prompt_toolkit.layout.containers import FloatContainer, Float
 import os
+import json
 import subprocess
 from deepnexus.utils import run_command
 from deepnexus.vars import APP_CONFIG_PATH
 
 def list_unmounted_disks():
-    all_disks = [d for d in os.listdir('/dev') if d.startswith('sd') and len(d) == 3]
-    mounted = subprocess.check_output('lsblk -nr -o MOUNTPOINT /dev/sd*', shell=True).decode().splitlines()
-    mounted_devices = set(filter(None, mounted))
-    return [f"/dev/{d}" for d in all_disks if not any(d in m for m in mounted_devices)]
+    output = subprocess.check_output(['lsblk', '-J', '-o', 'NAME,MOUNTPOINT']).decode()
+    data = json.loads(output)
+
+    unmounted_disks = []
+
+    for device in data['blockdevices']:
+        if device['name'].startswith('sd') and len(device['name']) == 3:
+            has_mounted_partition = False
+
+            # Check if any child partition is mounted
+            if 'children' in device:
+                for child in device['children']:
+                    if child.get('mountpoint'):
+                        has_mounted_partition = True
+                        break
+
+            if not has_mounted_partition:
+                unmounted_disks.append(f"/dev/{device['name']}")
+
+    return unmounted_disks
 
 def list_available_mounts():
     if not os.path.exists('/mnt'):
