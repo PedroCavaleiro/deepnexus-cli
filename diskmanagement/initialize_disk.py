@@ -14,7 +14,7 @@ import os
 import json
 import subprocess
 from deepnexus.utils import run_command, load_config
-from deepnexus.vars import DISKS_CONFIG_PATH
+from deepnexus.vars import DISKS_CONFIG_PATH, APP_CONFIG_PATH
 from diskmanagement.sas import show_sas_all
 import re
 
@@ -83,14 +83,37 @@ def add_to_fstab(uuid, mount_point):
     with open('/etc/fstab', 'a') as f:
         f.write(fstab_entry + '\n')
 
-def show_confirmation_dialog(floats, on_confirm, on_cancel):
-    confirm_text = FormattedTextControl(
-        text=[("class:confirmation-text", "Are you sure you want to proceed with disk initialization?")]
-    )
+def show_confirmation_dialog(floats, on_confirm, on_cancel, initialization_info):
+    app_config = load_config(APP_CONFIG_PATH)
+    text=[
+        ("class:confirmation-text", "Are you sure you want to proceed with disk initialization?")    
+    ]
+
+    table_rows = [
+        ("Disk", initialization_info['dev']),
+        ("Mount", initialization_info['mnt']),
+        ("Label", initialization_info['label'] if initialization_info['label'] else "NO LABEL"),
+        ("Add to fstab", str(initialization_info['fstab'])),
+        ("Add to configuration", str(initialization_info['disk_config'])),
+        ("Physical location", initialization_info['phy'] if initialization_info['phy'] else "Unknown"),
+    ]
+
+    if app_config['enable_sas']:
+        table_rows.append(("SAS Controller", initialization_info['controller'] if int(initialization_info['controller']) != -1 else 'NONE'))
+        table_rows.append(("SAS Slot", initialization_info['slot'] if int(initialization_info['slot']) != -1 else 'NONE'))
+
+    formatted_table = [
+        ("class:confirmation-text", f"{key:<22}: {value}\n")
+        for key, value in table_rows
+    ]
 
     centered_text_window = VSplit([
         Window(width=D(weight=1)),
-        Window(content=confirm_text, height=1),
+        HSplit([
+            Window(content=FormattedTextControl(text)),
+            Window(height=1, content=FormattedTextControl('')),
+            Window(content=FormattedTextControl(formatted_table)),
+        ]),
         Window(width=D(weight=1)),
     ])
 
@@ -198,7 +221,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
 
         disk = disk_radio.current_value
         label = label_input.text.strip() or "NO LABEL"
-        mount_name = mount_point_value[0].strip()
+        mount_name = mount_point_value[0]
         mount_point = f"/mnt/{mount_name}"
         phy = phy_input.text.strip() or "Unknown"
         add_fstab = fstab_input.current_value
@@ -224,7 +247,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
             disk_config.append({
                 "label": label,
                 "phy": phy,
-                #"mnt": mount_name,
+                "mnt": mount_name,
                 "card": card,
                 "slt": slt,
                 "uuid": uuid,
@@ -280,7 +303,17 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         handler=lambda: show_confirmation_dialog(
             floats,            
             lambda: (get_app().layout.focus(dialog), get_app().invalidate(), accept()),
-            lambda: (get_app().layout.focus(dialog), get_app().invalidate())
+            lambda: (get_app().layout.focus(dialog), get_app().invalidate()),
+            {
+                "dev": disk_radio.current_value,
+                "mnt": mount_point_value[0],
+                "label": label_input.text,
+                "fstab": fstab_input.current_value,
+                "disk_config": config_input.current_value,
+                "phy": phy_input.text.strip(),
+                "controller": sas_controller_value[0],
+                "slot": sas_slot_value[0]
+            }
         )
     ))    
     layout_items.append(Label("Press ESC to exit"))
