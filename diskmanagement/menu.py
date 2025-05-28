@@ -1,8 +1,8 @@
 from deepnexus.helpmenus import command_not_found
 from diskmanagement.helpmenu import disks_help, sas_submenu_help
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
-from deepnexus.utils import load_config, get_prompt_text, clear_screen, status_message, Status
-from diskmanagement.disks import show_all_disks, prepare_new_disk, locate_disk, mount_disk, show_disks_tree
+from deepnexus.utils import load_config, get_prompt_text, clear_screen, status_message, Status, run_command
+from diskmanagement.disks import show_all_disks, locate_disk, mount_disk, show_disks_tree
 from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
 from diskmanagement.fstab_manager import run_fstab_menu
 from diskmanagement.initialize_disk import initialize_disk
@@ -23,6 +23,10 @@ def disks_menu(app_config):
                 initialize_disk(disks_config, app_config)
             elif cmd == "back" or cmd == "..":
                 break
+            elif cmd.startswith("lsblk"):
+                print()
+                run_command(cmd)
+                print()
             elif cmd == "fstab":
                 run_fstab_menu()
             elif cmd == "sas":
