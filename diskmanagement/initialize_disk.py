@@ -1,7 +1,7 @@
 from prompt_toolkit import Application
 from prompt_toolkit.layout import Layout
 from prompt_toolkit.widgets import Button, Dialog, Label, TextArea, Box, Frame, RadioList
-from prompt_toolkit.layout.containers import HSplit, VSplit, Window
+from prompt_toolkit.layout.containers import HSplit, VSplit, Window, FloatContainer, Float, ConditionalContainer
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.styles import Style
@@ -9,7 +9,7 @@ from prompt_toolkit.layout.dimension import Dimension as D
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.layout.margins import ScrollbarMargin
-from prompt_toolkit.layout.containers import FloatContainer, Float
+from prompt_toolkit.filters import Condition
 import os
 import json
 import subprocess
@@ -134,8 +134,13 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     disk_radio = RadioList([(d, d) for d in disks])
     label_input = TextArea(prompt='Label: ', height=1)
     #mount_input = TextArea(prompt='Mount point name: /mnt/', height=1)
-    mount_point_value = [""]
-    mount_button = Button(text="Select mount point", handler=lambda: show_mount_popup(floats, mount_point_value, lambda: get_app().invalidate()))
+    mount_point_value = [None]
+    mount_button = Button(
+        text="Select mount point", 
+        handler=lambda: show_mount_popup(
+            floats, mount_point_value, lambda: get_app().invalidate(), dialog
+        )
+    )
     phy_input = TextArea(prompt='Physical location: ', height=1)
     fstab_input = RadioList([(True, 'Yes'), (False, 'No')])
     config_input = RadioList([(True, 'Yes'), (False, 'No')])
@@ -145,31 +150,36 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     output_lines = []
     output_control = FormattedTextControl(lambda: FormattedText(output_lines), focusable=False)
 
+    def get_mount_text():
+        value = mount_point_value[0]
+        text = f"Selected mount: {value}" if value else "Selected mount: <none>"
+        return FormattedText([("white", text)])
+
     def accept():
         show_log_popup(floats, output_control, on_close=lambda: get_app().exit())
 
         disk = disk_radio.current_value
         label = label_input.text.strip() or "NO LABEL"
-        #mount_name = mount_input.text.strip()
-        #mount_point = f"/mnt/{mount_name}"
+        mount_name = mount_point_value[0].strip()
+        mount_point = f"/mnt/{mount_name}"
         phy = phy_input.text.strip() or "Unknown"
         add_fstab = fstab_input.current_value
         add_config = config_input.current_value
         card = int(sas_card_input.text.strip()) if app_config.get("enable_sas") else -1
         slt = int(sas_slot_input.text.strip()) if app_config.get("enable_sas") else -1
 
-        #os.makedirs(mount_point, exist_ok=True)
+        os.makedirs(mount_point, exist_ok=True)
 
         if not dry_run:
             partition = disk_init(disk, label)
             uuid = get_partition_uuid(partition)
-            #run_command(f"mount {partition} {mount_point}")
-            #if add_fstab:
-            #    add_to_fstab(uuid, mount_point)
+            run_command(f"mount {partition} {mount_point}")
+            if add_fstab:
+                add_to_fstab(uuid, mount_point)
         else:
             partition = disk + '1'
             uuid = 'dry-run-uuid'
-            #log_message(output_lines, output_control, 'fg:blue', f'[DRY RUN] DISK/PARTITION: {disk}/{partition} UUID: {uuid} LABEL: {label} MOUNT NAME: {mount_name}')
+            log_message(output_lines, output_control, 'fg:blue', f'[DRY RUN] DISK/PARTITION: {disk}/{partition} UUID: {uuid} LABEL: {label} MOUNT NAME: {mount_name}')
             log_message(output_lines, output_control, 'fg:blue', f'[DRY RUN] PHYSICAL LOCATION: {phy} FSTAB: {add_fstab} CONFIG: {add_config} CARD: {card} SLOT: {slt}')
 
         if add_config:
@@ -185,6 +195,9 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
 
         log_message(output_lines, output_control, 'fg:green', 'Disk setup complete. Press ESC to exit.')
 
+    mount_label_control = FormattedTextControl(text=get_mount_text)
+    mount_label_window = Window(content=mount_label_control, height=1)
+
     layout_items = [
         Label("Select a disk to initialize:"),
         disk_radio,
@@ -192,7 +205,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         Label("Enter the partition label (optional)"),
         label_input,
         spacer,
-        Label("Available mount points: " + ", ".join(list_available_mounts())),
+        mount_label_window,
         #mount_input,
         mount_button,
         spacer,
@@ -277,7 +290,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     app = Application(layout=layout, key_bindings=kb, full_screen=True, mouse_support=False, style=style)
     app.run()
 
-def show_mount_popup(floats, selected_value_container, on_close):
+def show_mount_popup(floats, selected_value_container, on_close, dialog):
     mounts = list_available_mounts()
     entries = [(f"/mnt/{m}", m) for m in mounts]
     entries.append(("custom", "Enter new mount point..."))
@@ -285,42 +298,72 @@ def show_mount_popup(floats, selected_value_container, on_close):
     radio = RadioList(entries)
     custom_input = TextArea(prompt="New mount point name: /mnt/", height=1)
 
-    body = HSplit([radio])  # Define body here so we can modify it
+    showing_custom_input = [False]
 
-    def switch_to_custom_input():
-        body.children = [radio, custom_input]
-        dialog.buttons = [
-            Button(text="OK", handler=lambda: (
-                floats.clear(),
-                selected_value_container.__setitem__(0, f"/mnt/{custom_input.text.strip()}"),
-                on_close()
-            )),
-            Button(text="Cancel", handler=lambda: (floats.clear(), on_close()))
-        ]
+    radio_container = ConditionalContainer(
+        content=Box(radio, padding=1),
+        filter=Condition(lambda: not showing_custom_input[0])
+    )
+
+    custom_container = ConditionalContainer(
+        content=Box(custom_input, padding=1),
+        filter=Condition(lambda: showing_custom_input[0])
+    )
+
+    body = HSplit([radio_container, custom_container])
+
+    def close_popup():
+        if floats:
+            floats.clear()
+        get_app().layout.focus(dialog)
         get_app().invalidate()
+        on_close()
+
+    def on_custom_ok():
+        value = custom_input.text.strip()
+        if value:
+            selected_value_container[0] = f"/mnt/{value}"
+            close_popup()
+
+    def on_custom_cancel():
+        close_popup()
 
     def on_select():
         choice = radio.current_value
         if choice == "custom":
-            switch_to_custom_input()
+            showing_custom_input[0] = True
+            floats.clear()  # remove old popup
+            get_app().invalidate()
+            # recreate dialog with new buttons
+            new_popup = Dialog(
+                title="Select Mount Point",
+                body=body,
+                buttons=[
+                    Button(text="OK", handler=on_custom_ok),
+                    Button(text="Cancel", handler=on_custom_cancel),
+                ],
+                width=60
+            )
+            floats.append(Float(content=new_popup))
+            get_app().invalidate()
+            get_app().layout.focus(custom_input)
         else:
             selected_value_container[0] = choice
-            floats.clear()
-            on_close()
+            close_popup()
 
-    dialog = Dialog(
+    popup_dialog = Dialog(
         title="Select Mount Point",
         body=body,
         buttons=[
             Button(text="OK", handler=on_select),
-            Button(text="Cancel", handler=lambda: (floats.clear(), on_close()))
+            Button(text="Cancel", handler=close_popup),
         ],
-        width=60
+        width=60,
     )
 
-    floats.append(Float(content=dialog))
-    get_app().layout.focus(dialog)
+    floats.append(Float(content=popup_dialog))
     get_app().invalidate()
+    get_app().layout.focus(popup_dialog)
 
 
 def initialize_disk(disk_config, app_config):
