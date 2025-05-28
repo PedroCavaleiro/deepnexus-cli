@@ -5,20 +5,12 @@ import os
 import json
 from pathlib import Path
 from tabulate import tabulate
-from deepnexus.utils import status_message, Status, load_config, get_available_mounts, get_fstab_uuids, format_size
+from deepnexus.utils import status_message, Status, load_config, get_available_mounts, get_fstab_uuids
 from deepnexus.escape import Ansi
-from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH, FSTAB_PATH, MOUNT_OPTIONS
+from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH
 import subprocess
 import re
-from prompt_toolkit import Application
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.layout import Layout
-from prompt_toolkit.widgets import Frame
-from prompt_toolkit.layout.containers import HSplit, Window
-from prompt_toolkit.formatted_text import FormattedText
-from prompt_toolkit.layout.controls import FormattedTextControl
 from collections import defaultdict
-import asyncio
 font = Ansi.escape
 
 def show_all_disks(config):

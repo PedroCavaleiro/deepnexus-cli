@@ -6,9 +6,11 @@ import subprocess
 # Commands supported by storcli64
 # https://techdocs.broadcom.com/us/en/storage-and-ethernet-connectivity/enterprise-storage-solutions/storcli-12gbs-megaraid-tri-mode/1-0/v11869215/v11673749/v11675603/v11675913.html
 
-def show_sas_all():
+def show_sas_all(print_output = True):
     output = run_command(f"{STORCLI} /call/sall show")
-    print(output)
+    if print_output:
+        print(output)
+    return output
 
 def show_sas_disk(card, slot):
     output = run_command(f"{STORCLI} /c{card}/s{slot} show")
