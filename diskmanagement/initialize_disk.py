@@ -454,7 +454,8 @@ def show_sas_slot_popup(floats, selected_value_container, on_close, dialog):
             label += " (in use)"
         entries.append((slot, label))
 
-    radio = RadioList(entries, default_value="-1")
+    radio = RadioList(entries)
+    radio.current_value = "-1"
 
     def on_select():
         selected_value_container[0] = radio.current_value
