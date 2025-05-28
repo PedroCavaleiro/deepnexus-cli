@@ -442,7 +442,7 @@ def show_sas_controller_popup(floats, selected_sas_container, on_close, dialog):
     get_app().invalidate()
 
 def show_sas_slot_popup(floats, selected_value_container, on_close, dialog):
-    output = show_sas_all()
+    output = show_sas_all(False)
     entries = [("-1", "None")]  # default option
 
     used_slots = load_used_slots()
