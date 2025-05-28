@@ -226,21 +226,13 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         "frame.label": "bg:#000000 fg:#ffffff",
         "frame.border": "fg:#ffffff",
         "label": "fg:#ffffff",
-
-        #"radiolist": "fg:#ffffff bg:",
-        #"radiolist.focused": "fg:#ffffff bg:",
-        #"radio": "fg:#ffffff bg:#000000",
-        #"radio-selected": "fg:#ffffff bold",
-        #"radio-checked": "fg:#ffffff bg:#000000",
-        #"radio-unchecked": "fg:#ffffff bg:#000000",
-
-        "radiolist": "fg:#cccccc bg:#000000",  # ← default radio list item style
-        "radiolist.focused": "fg:#ffffff bg:#222222",  # ← highlighted when focused
-
-        "radio": "fg:#cccccc bg:#000000",  # ← unselected + unfocused
-        "radio-selected": "fg:#ffffff bold bg:#000000",
-        "radio-checked": "fg:#ffffff bg:#000000",  # optional: use green for checked
-        "radio-unchecked": "fg:#888888 bg:#000000",
+        
+        "radio-list": "fg:#ffffff bg:",
+        "radio-list.focused": "fg:#ffffff bg:",
+        "radio": "fg:#ffffff bg:#000000",
+        "radio-selected": "fg:#ffffff bold",
+        "radio-checked": "fg:#ffffff bg:#000000",
+        "radio-unchecked": "fg:#ffffff bg:#000000",
 
         "confirmation-text": "fg:white",
         "dialog": "bg:",
