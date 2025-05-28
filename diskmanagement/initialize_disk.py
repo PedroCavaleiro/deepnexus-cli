@@ -179,17 +179,17 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     output_control = FormattedTextControl(lambda: FormattedText(output_lines), focusable=False)
 
     def get_mount_text():
-        value = mount_point_value[0]
+        value = mount_point_value[0].trim()
         text = f"Selected mount: {value}" if value else "Selected mount: <none>"
         return FormattedText([("white", text)])
 
     def get_sas_controller_text():
-        value = sas_controller_value[0]
+        value = sas_controller_value[0].trim()
         text = f"SAS Controler: {value}" if value != -1 else "SAS Controller: None"
         return FormattedText([("white", text)])
     
     def get_sas_slot_text():
-        value = sas_slot_value[0]
+        value = sas_slot_value[0].trim()
         text = f"SAS Slot: {value}" if value != -1 else "SAS Slot: None"
         return FormattedText([("white", text)])
 
