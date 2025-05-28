@@ -13,9 +13,21 @@ from prompt_toolkit.filters import Condition
 import os
 import json
 import subprocess
-from deepnexus.utils import run_command
+from deepnexus.utils import run_command, load_config
+from deepnexus.vars import DISKS_CONFIG_PATH
 from diskmanagement.sas import show_sas_all
 import re
+
+def parse_sas_slots(output: str):
+    slot_pattern = re.compile(
+        r'(?P<eid_col>:)?(?P<slot>\d+)\s+'
+        r'\d+\s+\S+\s+-\s+(?P<size>\d+\.\d+ TB)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(?P<model>\S+)'
+    )
+    return [(slot, model, size) for _, slot, size, model in slot_pattern.findall(output)]
+
+def load_used_slots():
+    config = load_config(DISKS_CONFIG_PATH)
+    return {str(d.get("slt")) for d in config if "slt" in d}
 
 def parse_sas_controllers(sas_output: str):
     controllers = re.findall(r'^Controller\s+=\s+(\d+)', sas_output, re.MULTILINE)
@@ -148,14 +160,20 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     phy_input = TextArea(prompt='Physical location: ', height=1)
     fstab_input = RadioList([(True, 'Yes'), (False, 'No')])
     config_input = RadioList([(True, 'Yes'), (False, 'No')])
-    sas_controller_point_value = [-1]
-    sas_controller_mount_button = Button(
-        text="Select mount point", 
+    sas_controller_value = [-1]
+    sas_controller_button = Button(
+        text="Select SAS controller", 
         handler=lambda: show_sas_controller_popup(
-            floats, sas_controller_point_value, lambda: get_app().invalidate(), dialog
+            floats, sas_controller_value, lambda: get_app().invalidate(), dialog
         )
     )
-    sas_slot_input = TextArea(prompt='SAS slot (-1 for none): ', height=1)
+    sas_slot_value = [-1]
+    sas_slot_button = Button(
+        text="Select SAS slot", 
+        handler=lambda: show_sas_slot_popup(
+            floats, sas_slot_value, lambda: get_app().invalidate(), dialog
+        )
+    )
 
     output_lines = []
     output_control = FormattedTextControl(lambda: FormattedText(output_lines), focusable=False)
@@ -166,7 +184,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         return FormattedText([("white", text)])
 
     def get_sas_controller_text():
-        value = sas_controller_point_value[0]
+        value = sas_controller_value[0]
         text = f"SAS Controler: {value}" if value != -1 else "SAS Controller: None"
         return FormattedText([("white", text)])
 
@@ -180,8 +198,8 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         phy = phy_input.text.strip() or "Unknown"
         add_fstab = fstab_input.current_value
         add_config = config_input.current_value
-        card = int(sas_card_input.text.strip()) if app_config.get("enable_sas") else -1
-        slt = int(sas_slot_input.text.strip()) if app_config.get("enable_sas") else -1
+        card = int(sas_controller_value[0]) if app_config.get("enable_sas") else -1
+        slt = int(sas_slot_value[0]) if app_config.get("enable_sas") else -1
 
         os.makedirs(mount_point, exist_ok=True)
 
@@ -214,6 +232,8 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     mount_label_window = Window(content=mount_label_control, height=1)
     sas_controller_label_control = FormattedTextControl(text=get_sas_controller_text)
     sas_controller_label_window = Window(content=sas_controller_label_control, height=1)
+    sas_slot_label_control = FormattedTextControl(text=get_sas_controller_text)
+    sas_slot_label_window = Window(content=sas_slot_label_control, height=1)
 
     layout_items = [
         Label("Select a disk to initialize:"),
@@ -239,10 +259,10 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     if app_config.get("enable_sas"):
         layout_items += [
             sas_controller_label_window,
-            sas_controller_mount_button,
+            sas_controller_button,
             spacer,
-            Label("Enter SAS slot number:"),
-            sas_slot_input,
+            sas_slot_label_window,
+            sas_slot_button,
             spacer,
         ]
 
@@ -386,7 +406,7 @@ def show_sas_controller_popup(floats, selected_sas_container, on_close, dialog):
     controller_ids = parse_sas_controllers(sas_output)
 
     # Build entries with default -1 (None) selected
-    entries = [('-1', "None (disable SAS controller selection)")]
+    entries = [('-1', "None")]
     entries.extend([(cid, f"Controller {cid}") for cid in controller_ids])
     
     radio = RadioList(entries)
@@ -401,6 +421,45 @@ def show_sas_controller_popup(floats, selected_sas_container, on_close, dialog):
     popup_dialog = Dialog(
         title="Select SAS Controller",
         body=Box(HSplit([radio]), padding=1),
+        buttons=[
+            Button(text="OK", handler=on_select),
+            Button(text="Cancel", handler=lambda: (
+                floats.clear(),
+                get_app().layout.focus(dialog),
+                on_close()
+            )),
+        ],
+        width=60
+    )
+
+    floats.append(Float(content=popup_dialog))
+    get_app().layout.focus(popup_dialog)
+    get_app().invalidate()
+
+def show_sas_slot_popup(floats, selected_value_container, on_close, dialog):
+    output = show_sas_all()
+    entries = [("-1", "None")]  # default option
+
+    used_slots = load_used_slots()
+    parsed_slots = parse_sas_slots(output)
+
+    for slot, model, size in parsed_slots:
+        label = f"Slot {slot} ({model} {size})"
+        if slot in used_slots:
+            label += " (in use)"
+        entries.append((slot, label))
+
+    radio = RadioList(entries, default_value="-1")
+
+    def on_select():
+        selected_value_container[0] = radio.current_value
+        floats.clear()
+        get_app().layout.focus(dialog)
+        on_close()
+
+    popup_dialog = Dialog(
+        title="Select SAS Slot",
+        body=Box(radio, padding=1),
         buttons=[
             Button(text="OK", handler=on_select),
             Button(text="Cancel", handler=lambda: (
