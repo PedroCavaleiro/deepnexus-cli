@@ -382,7 +382,7 @@ def show_mount_popup(floats, selected_value_container, on_close, dialog):
     get_app().layout.focus(popup_dialog)
 
 def show_sas_controller_popup(floats, selected_sas_container, on_close, dialog):
-    sas_output = show_sas_all()
+    sas_output = show_sas_all(False)
     controller_ids = parse_sas_controllers(sas_output)
 
     # Build entries with default -1 (None) selected
