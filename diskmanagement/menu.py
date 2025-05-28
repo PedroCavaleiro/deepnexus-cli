@@ -26,7 +26,6 @@ def disks_menu(app_config):
             elif cmd.startswith("lsblk"):
                 print()
                 print(run_command(cmd))
-                print()
             elif cmd == "fstab":
                 run_fstab_menu()
             elif cmd == "sas":
