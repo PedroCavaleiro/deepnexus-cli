@@ -3,7 +3,7 @@ from prompt_toolkit.widgets import Button, Dialog, Box, RadioList, TextArea
 from prompt_toolkit.layout.containers import Float
 from prompt_toolkit.layout.containers import HSplit, Float, ConditionalContainer
 from prompt_toolkit.filters import Condition
-from diskmanagement.initialize_disk.utils import list_available_mounts
+from diskmanagement.utils import list_available_mounts
 
 def show_mount_popup(floats, selected_value_container, on_close, dialog):
     mounts = list_available_mounts()

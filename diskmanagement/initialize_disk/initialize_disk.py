@@ -10,7 +10,7 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.formatted_text import FormattedText
 import os
 from deepnexus.utils import run_command
-from diskmanagement.initialize_disk.utils import list_unmounted_disks, get_partition_uuid, log_message, get_disk_size
+from diskmanagement.utils import list_unmounted_disks, get_partition_uuid, log_message, get_disk_size
 from diskmanagement.initialize_disk.popups import show_mount_popup, show_sas_controller_popup, show_sas_slot_popup, show_log_popup, show_confirmation_dialog
 from deepnexus.vars import COLORS
 
@@ -117,7 +117,9 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
             partition = disk_init(disk, label, output_lines, output_control)
             uuid = get_partition_uuid(partition)
             if mount_after_init:
+                log_message(output_lines, output_control, f"fg:{COLORS['info']}", f"Mounting {partition}")
                 run_command(f"mount {partition} {mount_point}")
+                log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"Mounted {partition}")
             if add_fstab:
                 add_to_fstab(uuid, mount_point)
         else:

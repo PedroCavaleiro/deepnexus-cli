@@ -43,6 +43,21 @@ def list_unmounted_disks():
 
     return unmounted_disks
 
+def list_unmounted_partitions():
+    output = subprocess.check_output(['lsblk', '-J', '-o', 'NAME,MOUNTPOINT']).decode()
+    data = json.loads(output)
+
+    unmounted_partitions = []
+
+    for device in data['blockdevices']:
+        if device['name'].startswith('sd') and len(device['name']) == 3:
+            if 'children' in device:
+                for child in device['children']:
+                    if not child.get('mountpoint'):
+                        unmounted_partitions.append(f"/dev/{child['name']}")
+
+    return unmounted_partitions
+
 def get_disk_size(device):
     output = subprocess.check_output(['lsblk', '-dn', '-o', 'SIZE', device])
     return output.decode().strip()
