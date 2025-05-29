@@ -46,6 +46,8 @@ def add_to_fstab(uuid, mount_point, output_lines, output_control):
         f.write(fstab_entry + '\n')
 
 def interactive_disk_setup(app_config, disk_config, dry_run=False):
+    floats = []
+    
     disks = list_unmounted_disks()
     spacer = Window(height=1, content=FormattedTextControl(''))
 
@@ -176,10 +178,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
             sas_slot_label_window,
             sas_slot_button,
             spacer,
-        ]
-
-    
-    floats = []
+        ]    
 
     layout_items.append(Window(height=D(weight=1)))
     layout_items.append(Button(
