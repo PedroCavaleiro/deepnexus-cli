@@ -43,6 +43,10 @@ def list_unmounted_disks():
 
     return unmounted_disks
 
+def get_disk_size(device):
+    output = subprocess.check_output(['lsblk', '-dn', '-o', 'SIZE', device])
+    return output.decode().strip()
+
 def list_available_mounts():
     if not os.path.exists('/mnt'):
         os.makedirs('/mnt')

@@ -10,7 +10,7 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.formatted_text import FormattedText
 import os
 from deepnexus.utils import run_command
-from diskmanagement.initialize_disk.utils import list_unmounted_disks, get_partition_uuid, log_message
+from diskmanagement.initialize_disk.utils import list_unmounted_disks, get_partition_uuid, log_message, get_disk_size
 from diskmanagement.initialize_disk.popups import show_mount_popup, show_sas_controller_popup, show_sas_slot_popup, show_log_popup, show_confirmation_dialog
 from deepnexus.vars import COLORS
 
@@ -49,9 +49,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     disks = list_unmounted_disks()
     spacer = Window(height=1, content=FormattedTextControl(''))
 
-    selected_disk = [disks[0]] if disks else ["/dev/sdx"]
-
-    disk_radio = RadioList([(d, d) for d in disks])
+    disk_radio = RadioList([(d, f"{d} ({get_disk_size(d)})") for d in disks])
     label_input = TextArea(prompt='Label: ', height=1)
     mount_point_value = [None]
     mount_button = Button(

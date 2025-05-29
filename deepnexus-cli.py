@@ -14,7 +14,7 @@ def main():
 
     config = load_config(APP_CONFIG_PATH)
     ascii_art = pyfiglet.figlet_format(config["banner"]) # type: ignore
-
+    os.system('clear')
     print(ascii_art)    
     print(f"    {font('italic')}DeepNexus Server management tool.")
     print(f"    {font('italic')}Type 'help' for commands.{font('reset')}")
