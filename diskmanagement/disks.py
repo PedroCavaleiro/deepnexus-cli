@@ -1,15 +1,16 @@
-from deepnexus.utils import run_command, parse_mount_targets
+from deepnexus.utils import run_command, parse_mount_targets, is_disk_mounted, get_fstab_uuids
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from diskmanagement.sas import show_sas_all, start_locate_drive, end_locate_drive
 import os
 import json
 from pathlib import Path
 from tabulate import tabulate
-from deepnexus.utils import status_message, Status, load_config, get_available_mounts
+from deepnexus.utils import status_message, Status, load_config, get_available_mounts, get_fstab_uuids
 from deepnexus.escape import Ansi
 from deepnexus.vars import APP_CONFIG_PATH, DISKS_CONFIG_PATH
 import subprocess
 import re
+from collections import defaultdict
 font = Ansi.escape
 
 def show_all_disks(config):
@@ -17,9 +18,8 @@ def show_all_disks(config):
         mounted_paths = parse_mount_targets()
         data = []
         for disk in config:
-            mount_point = f"/mnt/{disk['mnt']}"
-            normalized_mount = os.path.normpath(os.path.realpath(mount_point))
-            is_mounted = normalized_mount in mounted_paths
+            mount_point = f"/mnt/{disk['mnt']}"            
+            is_mounted = is_disk_mounted(mounted_paths, mount_point)
             status_icon = f"{font('fg_green')}   ●  {font('reset')}" if is_mounted else f"{font('fg_red')}   ●  {font('reset')}"
             entry = [status_icon, disk['label'], mount_point, disk['uuid'], disk['phy'], disk['card'] if disk['card'] != -1 else "N/A", disk['slt'] if disk['slt'] != -1 else "N/A"]
             data.append(entry)
@@ -114,167 +114,6 @@ def mount_disk(config):
     print(result)
     print(f"{status_message(Status.SUCCESS)} Disk mounted at /mnt/{mount_point.replace('/mnt/', '')}.")
 
-def prepare_new_disk(config):
-
-    app_config = load_config(APP_CONFIG_PATH)
-
-    print(f"{status_message(Status.INFO)} Scanning for unmounted /dev/sdX disks...\n")
-
-    lsblk_output = run_command("lsblk -o NAME,MOUNTPOINT -n -p")
-
-    # Collect mounted devices (partitions or disks)
-    mounted_devices = set()
-    disk_to_children = {}
-
-    for line in lsblk_output.strip().splitlines():
-        parts = line.split()
-        name = parts[0]  # /dev/sdX or /dev/sdXY
-        mount = parts[1] if len(parts) > 1 else ""
-        base = os.path.basename(name)
-
-        if mount and mount != "":
-            mounted_devices.add(name)
-            
-        if base.startswith("sd") and len(base) > 3:
-            parent = "/dev/" + base[:3]
-            disk_to_children.setdefault(parent, []).append(name)
-
-    # List eligible unmounted disks (ignoring partitions)
-    eligible_disks = []
-    for device in sorted(set("/dev/" + os.path.basename(l.split()[0]) for l in lsblk_output.strip().splitlines()
-                             if os.path.basename(l.split()[0]).startswith("sd") and len(os.path.basename(l.split()[0])) == 3)):
-        children = disk_to_children.get(device, [])
-        if device not in mounted_devices and not any(c in mounted_devices for c in children):
-            eligible_disks.append(device)
-
-    if not eligible_disks:
-        print(f"{status_message(Status.ERROR)}No eligible unmounted /dev/sdX disks found.")
-        return
-
-    print("Available unmounted disks:")
-    for idx, disk in enumerate(eligible_disks, 1):
-        print(f"  {idx}. {disk}")
-    print()
-
-    try:
-        choice = int(input("Select a disk number to format (or 0 to cancel): "))
-        if choice == 0:
-            print("Operation cancelled.")
-            return
-        if not (1 <= choice <= len(eligible_disks)):
-            print(f"{font('fg_red')}Invalid choice.{font('reset')}")
-            return
-    except ValueError:
-        print(f"{font('fg_red')}Invalid input.{font('reset')}")
-        return
-
-    disk = eligible_disks[choice - 1]
-    print(f"\n{font('fg_yellow')}Selected disk: {disk}{font('reset')}")
-    confirm = input(f"This will erase all data on {disk}. Proceed? (yes/[no]): ").lower()
-    if confirm != "yes":
-        print("Operation aborted.")
-        return
-
-    print(f"{status_message(Status.INFO)} Creating GPT partition table on {disk}...")
-    run_command(f"parted -s {disk} mklabel gpt")
-
-    print(f"{status_message(Status.INFO)} Creating primary ext4 partition spanning the entire disk...")
-    run_command(f"parted -s {disk} mkpart primary ext4 0% 100%")
-
-    partition = disk + "1"
-    print(f"{status_message(Status.INFO)} Formatting {partition} as ext4...")
-    run_command(f"mkfs.ext4 -F {partition}")
-
-    label = input("Enter label for the new partition: ").strip()
-    if label:
-        print(f"{status_message(Status.INFO)} Labeling partition as '{label}'...")
-        run_command(f"e2label {partition} '{label}'")
-    else:
-        print("No label set.")
-
-    # Get UUID Partition
-    blkid_output = run_command(f"blkid {partition}")
-    uuid = None
-    for part in blkid_output.split():
-        if part.startswith("UUID="):
-            uuid = part.split("=")[1].strip('"')
-            break
-
-    if not uuid:
-        print(f"{status_message(Status.ERROR)} Failed to retrieve UUID for {partition}.")
-        return
-
-    # Get mount 
-    nomnt_mount_point = input("Enter mount point (e.g., sdc1): ").strip().lower()
-    mount_point = f"/mnt/{nomnt_mount_point}"
-
-    os.makedirs(mount_point, exist_ok=True)
-
-    fstab_choice = input(f"Do you want to add this disk to fstab? (yes/[no]): ").strip().lower()
-    # Append to /etc/fstab
-    if fstab_choice == "yes":
-        fstab_line = f"UUID={uuid} {mount_point} ext4 defaults,nofail,x-systemd.device-timeout=0 0 2\n"
-        with open("/etc/fstab", "a") as fstab:
-            fstab.write(fstab_line)
-
-        print(f"{status_message(Status.SUCCESS)} Entry added to /etc/fstab")
-        print(fstab_line)
-
-        run_command("systemctl daemon-reload")
-
-    # Ask to mount
-    choice = input(f"Do you want to mount the disk now? (yes/[no]): ").strip().lower()
-    if choice == "yes":
-        result = run_command(f"mount {mount_point}")
-        print(result)
-        print(f"{status_message(Status.SUCCESS)}Disk mounted at {mount_point}.")
-
-    card = -1
-    slot = -1
-
-    if app_config['enable_sas']: # type: ignore
-        # Show SAS info and prompt for card and slot
-        print("\nDisplaying SAS card/slot info to help with identification:\n")
-        show_sas_all()
-
-        try:
-            card = int(input("Enter SAS card number: ").strip())
-            slot = int(input("Enter SAS slot number: ").strip())
-        except ValueError:
-            print(f"{COLORS['red']}Invalid input for card or slot. Skipping config update.{COLORS['reset']}")
-            return
-
-    # Append to config
-    config_path = Path(DISKS_CONFIG_PATH)
-
-    tmpLabel = ""
-    if label:
-        tmpLabel = label
-    else:
-        tmpLabel = "NO LABEL"
-
-    try:
-        phy = input("Enter the physical location in the case (enter for none): ")
-        config.append({
-            "label": tmpLabel,
-            "phy": phy if phy != "" else "Unknown",
-            "mnt": mount_point,
-            "card": card,
-            "slt": slot,
-            "uuid": uuid,
-            "dev": disk.replace("/dev/", "")
-        })
-
-        with open(config_path, "w") as f:
-           json.dump(config, f, indent=2)
-
-        print(f"{status_message(Status.SUCCESS)}Disk added to {DISKS_CONFIG_PATH}.")
-    except Exception as e:
-        print(f"{status_message(Status.ERROR)}Failed to update config: {e}")
-
-
-    print(f"{status_message(Status.SUCCESS)}Disk preparation complete!\n")
-
 def locate_disk(config, target=None):
     app_config = load_config(APP_CONFIG_PATH)
     if app_config['enable_sas'] == False: # type: ignore
@@ -317,7 +156,7 @@ def get_smart_temperatures():
         if 'dev' not in disk:
             print(f"Warning: Disk entry missing 'dev' field. Skipping: {disk}")
             continue
-        
+
         dev = f"/dev/{disk['dev']}"
         name = disk["label"]
 
@@ -345,3 +184,52 @@ def get_smart_temperatures():
             print(f"smartctl failed for {dev}: {e}")
             temperatures[name] = None
     return temperatures
+
+def print_tree(data, prefix=""):
+    mounted_paths = parse_mount_targets()
+    fstab_uuids = get_fstab_uuids()
+    keys = list(data.keys())
+    for i, key in enumerate(keys):
+        is_last = i == len(keys) - 1
+        branch = "└── " if is_last else "├── "
+        print(f"{prefix}{branch}{key}")
+        if isinstance(data[key], list):
+            for j, item in enumerate(data[key]):
+                is_mounted = is_disk_mounted(mounted_paths, f"/mnt/{item['mnt']}")
+                status_icon = f"{font('fg_green')}● {font('reset')}" if is_mounted else f"{font('fg_red')}● {font('reset')}"
+                sub_prefix = prefix + ("    " if is_last else "│   ")
+                sub_branch = "└── " if j == len(data[key]) - 1 else "├── "
+                print(f"{sub_prefix}{sub_branch}{status_icon} {item['label']}")
+                details_prefix = sub_prefix + ("    " if j == len(data[key]) - 1 else "│   ")
+                print(f"{details_prefix}├── Mount Point: /mnt/{item['mnt']}")
+                print(f"{details_prefix}├── Partition UUID: {item['uuid']}")
+                print(f"{details_prefix}├── Physical Location: {item['phy']}")
+                print(f"{details_prefix}├── Device: /dev/{item['dev']}")
+                if item['uuid'] in fstab_uuids:
+                    print(f"{details_prefix}├── Automount: YES")
+                else:
+                    print(f"{details_prefix}├── Automount: NO")
+                print(f"{details_prefix}└── SAS Slot: {item['slt']}")
+    print()
+
+def show_disks_tree(config):
+    if not config:
+        print("There are no configured disks")
+        return
+
+    grouped = defaultdict(list)
+    for disk in config:
+        if disk.get("card", -1) == -1 or disk.get("slt", -1) == -1:
+            continue
+        grouped[disk["card"]].append(disk)
+
+    if not grouped:
+        print("No valid disks with SAS card and slot info")
+        return
+
+    output_tree = {}
+    for card in sorted(grouped.keys()):
+        output_tree[f"SAS Controller {card}"] = grouped[card]
+
+    print("Disks")
+    print_tree(output_tree)

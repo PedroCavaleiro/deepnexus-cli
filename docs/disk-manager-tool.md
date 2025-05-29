@@ -30,24 +30,41 @@ The structure of the file is the following
 
 ### Main Menu
 
-* **sas**: Enter the SAS sub-menu
-* **initialize disk**: Initializes a disk (remember this match my needs might not be the same for you, read more [here](#initialize-disk-command))
-* **show**: Shows all disks, configured within `disks.json`
+* **`sas`**: Enter the SAS sub-menu (if enabled in settings)
+* **`initialize disk, init disk`**: Initializes a disk (remember this match my needs might not be the same for you, read more [here](#initialize-disk-command))
+* **`show`**: Shows all disks, configured within `disks.json` in a tree view format
+  ```
+  Disks
+  └── SAS Controller 1
+      └── ●  EXOS X18 16TB 1
+          ├── Mount Point: /mnt/hdd-r0c0
+          ├── Partition UUID: a140cf0d-c26e-4904-9dc2-c5e51332d37e
+          ├── Physical Location: Row 1 Column 1
+          ├── Device: /dev/sdc
+          ├── Automount: YES
+          └── SAS Slot: 3
+  ```
+* **`show all`**: Show all disks, configured within `disks.json` in a table format
 
 ### SAS Sub-menu
 
 These commands make use of storcli64
 
-* **show all**: Shows all disks connected to all SAS interfaces
-* **show disk rXcY**: Shows a disk info at row X and col Y
-* **smart rXcY**: Shows a disk info at row X and col Y (*NOTE: This hasn't been tested since it's not a supported command by storcli64*)
+* **`show all`**: Shows all disks connected to all SAS interfaces
+* **`show disk <mount point>`**: Shows a disk info at a mount point, uses the sas controller info
+* **`controller <controller id>`**: Shows the controller info
 
 ## Initialize Disk Command
 
-The following steps are taken to initialize a disk
+Disk initialization is based on the form that requests
+
+1. The disk to be initialized
+2. Partition Label (optional, defaults to `NO LABEL`)
+3. Selected mount, shows a list of available mounts or creates a new one
+4. 
 
 1. Displays all connected HDDs/SSDs through SAS/SATA and not mounted
-2. Presents a list of disks to pick in order to format to EXT4, this will format the disk with GPT Partition Table with a single partition spawning the entire disk. A prompt will be presented to confirm after selecting a disk
+2. Presents a list of disks to pick in order to format to EXT4, this will format the disk with GPT Partition Table with a single partition spawning the entire disk. 3. 
 3. After the filesystem is created it prompts the user to add a label (this is optional, pressing enter will not add a label)
 4. Prompts the user to enter the mount point (partially) it only asks for r{ROW}c{COL} it will be assumed the mountpoint /mnt/hdd-r{ROW}c{COL}
 5. A entry will be added to the /etc/fstab with **nofail** flag

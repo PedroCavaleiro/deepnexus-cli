@@ -5,6 +5,13 @@ from enum import Enum
 from deepnexus.escape import Ansi
 font = Ansi.escape
 
+def format_size(bytes_value):
+    for unit in ['B', 'K', 'M', 'G', 'T']:
+        if bytes_value < 1024.0:
+            return f"{bytes_value:.1f}{unit}"
+        bytes_value /= 1024.0
+    return f"{bytes_value:.1f}P"
+
 def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
 
@@ -92,3 +99,22 @@ def get_available_mounts():
         mounted_points = set(line.split()[1] for line in f)
         
     return [d for d in all_mnt_dirs if d not in mounted_points]
+
+def is_disk_mounted(mounted_paths, mount_point):
+    normalized_mount = os.path.normpath(os.path.realpath(mount_point))
+    return normalized_mount in mounted_paths
+
+def get_fstab_uuids():
+    fstab_uuids = set()
+    try:
+        with open("/etc/fstab", "r") as fstab:
+            for line in fstab:
+                line = line.strip()
+                if line.startswith("UUID="):
+                    parts = line.split()
+                    if parts:
+                        uuid = parts[0].replace("UUID=", "")
+                        fstab_uuids.add(uuid)
+    except Exception as e:
+        print(f"Error reading /etc/fstab: {e}")
+    return fstab_uuids

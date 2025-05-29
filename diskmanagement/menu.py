@@ -1,9 +1,11 @@
 from deepnexus.helpmenus import command_not_found
 from diskmanagement.helpmenu import disks_help, sas_submenu_help
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
-from deepnexus.utils import load_config, get_prompt_text, clear_screen, status_message, Status
-from diskmanagement.disks import show_all_disks, prepare_new_disk, locate_disk, mount_disk
-from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
+from deepnexus.utils import load_config, get_prompt_text, clear_screen, status_message, Status, run_command
+from diskmanagement.disks import show_all_disks, locate_disk, mount_disk, show_disks_tree
+from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart, show_sas_controller
+from diskmanagement.fstab_manager import run_fstab_menu
+from diskmanagement.initialize_disk.initialize_disk import initialize_disk
 
 def disks_menu(app_config):
     disks_config = load_config(DISKS_CONFIG_PATH)
@@ -17,10 +19,15 @@ def disks_menu(app_config):
                 break
             elif cmd == "mount disk":
                 mount_disk(disks_config)
-            elif cmd == "initialize disk":
-                prepare_new_disk(disks_config)
+            elif cmd == "initialize disk" or cmd == "init disk":
+                initialize_disk(disks_config, app_config)
             elif cmd == "back" or cmd == "..":
                 break
+            elif cmd.startswith("lsblk"):
+                print()
+                print(run_command(cmd))
+            elif cmd == "fstab":
+                run_fstab_menu()
             elif cmd == "sas":
                 if app_config["enable_sas"]:                    
                     goback = sas_submenu(app_config, disks_config)
@@ -31,9 +38,15 @@ def disks_menu(app_config):
                 else:
                     print(f"{status_message(Status.ERROR)} SAS Functionality Disabled!")
                     print()
-            elif cmd == "show":
+            elif cmd == "show all":
                 print()
                 show_all_disks(disks_config)
+            elif cmd == "show":
+                print()
+                if app_config["enable_sas"]:
+                    show_disks_tree(disks_config)
+                else:
+                    show_all_disks(disks_config)
             elif cmd.startswith("locate disk"):
                 parts = cmd.split()
                 if len(parts) == 2:
@@ -66,6 +79,9 @@ def sas_submenu(app_config, config):
                 break
             elif cmd == "show all":
                 show_sas_all()
+            elif cmd.startswith("controller "):
+                arg = cmd[11:].strip().lower()
+                show_sas_controller(arg)
             elif cmd.startswith("show disk "):
                 arg = cmd[10:].strip().lower()
                 disk = next((d for d in config if d.get("mnt") == f"/mnt/{arg}"), None)
