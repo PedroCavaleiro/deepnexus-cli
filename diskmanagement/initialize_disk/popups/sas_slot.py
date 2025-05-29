@@ -5,6 +5,7 @@ from prompt_toolkit.layout.containers import Float
 from diskmanagement.sas import show_sas_controller
 
 def show_sas_slot_popup(floats, controller, selected_value_container, on_close, dialog):
+    print(controller)
     output = show_sas_controller(controller, False)
     entries = [("-1", "None")]
 
