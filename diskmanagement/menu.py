@@ -3,7 +3,7 @@ from diskmanagement.helpmenu import disks_help, sas_submenu_help
 from deepnexus.vars import COLORS, DISKS_CONFIG_PATH
 from deepnexus.utils import load_config, get_prompt_text, clear_screen, status_message, Status, run_command
 from diskmanagement.disks import show_all_disks, locate_disk, mount_disk, show_disks_tree
-from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
+from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart, show_sas_controller
 from diskmanagement.fstab_manager import run_fstab_menu
 from diskmanagement.initialize_disk.initialize_disk import initialize_disk
 
@@ -79,6 +79,9 @@ def sas_submenu(app_config, config):
                 break
             elif cmd == "show all":
                 show_sas_all()
+            elif cmd.startswith("controller "):
+                arg = cmd[11:].strip().lower()
+                show_sas_controller(arg)
             elif cmd.startswith("show disk "):
                 arg = cmd[10:].strip().lower()
                 disk = next((d for d in config if d.get("mnt") == f"/mnt/{arg}"), None)
