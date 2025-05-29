@@ -28,7 +28,7 @@ def show_sas_slot_popup(floats, controller, selected_value_container, on_close, 
 
     popup_dialog = Dialog(
         title="Select SAS Slot",
-        body=Box([radio, Label(controller)], padding=1),
+        body=Box(Label(controller), padding=1),
         buttons=[
             Button(text="OK", handler=on_select),
             Button(text="Cancel", handler=lambda: (
