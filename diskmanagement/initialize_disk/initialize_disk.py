@@ -59,7 +59,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     sas_slot_button = Button(
         text="Select SAS slot", 
         handler=lambda: show_sas_slot_popup(
-            floats, sas_controller_value[0] if int(sas_controller_value[0]) == -1 else "all", sas_slot_value, lambda: get_app().invalidate(), dialog
+            floats, sas_controller_value[0] if int(sas_controller_value[0]) != -1 else "all", sas_slot_value, lambda: get_app().invalidate(), dialog
         )
     )
 
