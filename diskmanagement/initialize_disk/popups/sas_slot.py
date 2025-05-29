@@ -1,5 +1,5 @@
 from prompt_toolkit.application.current import get_app
-from diskmanagement.initialize_disk.utils import parse_sas_slots, load_used_slots
+from diskmanagement.utils import parse_sas_slots, load_used_slots
 from prompt_toolkit.widgets import Button, Dialog, Box, RadioList
 from prompt_toolkit.layout.containers import Float
 from diskmanagement.sas import show_sas_controller

@@ -60,3 +60,50 @@ def show_confirmation_dialog(floats, on_confirm, on_cancel, initialization_info)
     get_app().layout.focus(yes_button)
 
     get_app().invalidate()
+
+def show_confirmation_disk_mount_dialog(floats, on_confirm, on_cancel, initialization_info):
+    app_config = load_config(APP_CONFIG_PATH)
+    text=[
+        ("class:confirmation-text", "Do you want to mount the disk?")    
+    ]
+
+    table_rows = [
+        ("Disk", initialization_info['dev']),
+        ("Mount", initialization_info['mnt']),
+        ("Add to fstab", str(initialization_info['fstab'])),
+    ]
+
+    formatted_table = [
+        ("class:confirmation-text", f"{key:<22}: {value}\n")
+        for key, value in table_rows
+    ]
+
+    centered_text_window = VSplit([
+        Window(width=D(weight=1)),
+        HSplit([            
+            Window(content=FormattedTextControl(text)),
+            Window(height=1, content=FormattedTextControl('')),
+            Window(content=FormattedTextControl(formatted_table)),                      
+        ]),
+        Window(width=D(weight=1)),
+    ])
+
+    confirm_body = HSplit([
+        centered_text_window
+    ])
+
+    yes_button = Button(text="Yes", handler=lambda: (floats.clear(), on_confirm()))
+    no_button = Button(text="No", handler=lambda: (floats.clear(), on_cancel()))
+
+    confirm_dialog = Dialog(
+        title="Confirm Action",
+        body=confirm_body,
+        buttons=[yes_button, no_button],
+        width=80
+    )
+
+    floats.append(Float(content=confirm_dialog))
+
+    get_app().layout.focus(yes_button)
+
+    get_app().invalidate()

@@ -1,5 +1,5 @@
 from diskmanagement.sas import show_sas_all
-from diskmanagement.initialize_disk.utils import parse_sas_controllers
+from diskmanagement.utils import parse_sas_controllers
 from prompt_toolkit.widgets import Button, Dialog, Box, RadioList
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.layout.containers import HSplit, Float
