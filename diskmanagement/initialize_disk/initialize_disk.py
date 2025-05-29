@@ -87,7 +87,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
 
     def get_sas_controller_text():
         value = sas_controller_value[0]
-        text = f"SAS Controler: {value}" if int(value) != -1 else "SAS Controller: None"
+        text = f"SAS Controller: {value}" if int(value) != -1 else "SAS Controller: None"
         return FormattedText([("white", text)])
     
     def get_sas_slot_text():
