@@ -11,7 +11,6 @@ REPO_URL = 'https://github.com/PedroCavaleiro/deepnexus-cli.git'
 BACKUP_DIR = 'backups'
 
 def create_backup():
-    # Clear existing backups
     if os.path.exists(BACKUP_DIR):
         shutil.rmtree(BACKUP_DIR)
 
@@ -84,8 +83,9 @@ def update_tool():
             else:
                 shutil.copy2(s, d)
 
-        print(f"{status_message(Status.SUCCESS)} Update complete. Restarting the tool...\n")
+        print(f"{status_message(Status.SUCCESS)} Update complete. Restarting the tool...\n")        
         python = sys.executable
+        os.system('clear')
         os.execv(python, [python] + sys.argv)
 
 
