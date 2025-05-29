@@ -76,7 +76,7 @@ def interactive_mount_disk(dry_run=False):
     mount_label_window = Window(content=mount_label_control, height=1)
 
     layout_items = [
-        Label("Select a disk to initialize:"),
+        Label("Select a disk to mount:"),
         disk_radio,
         spacer,
         mount_label_window,
