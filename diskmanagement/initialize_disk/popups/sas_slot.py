@@ -8,8 +8,12 @@ def show_sas_slot_popup(floats, controller, selected_value_container, on_close, 
     output = show_sas_controller(controller, False)
     entries = [("-1", "None")]
 
-    used_slots = load_used_slots()
-    parsed_slots = parse_sas_slots(output)
+    used_slots = []
+    parsed_slots = []
+
+    if int(controller) != -1:
+        used_slots = load_used_slots()
+        parsed_slots = parse_sas_slots(output)
 
     for slot, model, size in parsed_slots:
         label = f"Slot {slot} ({model} {size})"
