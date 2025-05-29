@@ -4,7 +4,7 @@ from prompt_toolkit.application.current import get_app
 from prompt_toolkit.layout.dimension import Dimension as D
 from prompt_toolkit.layout.controls import FormattedTextControl
 from deepnexus.utils import load_config
-from deepnexus.vars import APP_CONFIG_PATH
+from deepnexus.vars import APP_CONFIG_PATH, COLORS
 
 def show_confirmation_dialog(floats, on_confirm, on_cancel, initialization_info):
     app_config = load_config(APP_CONFIG_PATH)
@@ -33,9 +33,10 @@ def show_confirmation_dialog(floats, on_confirm, on_cancel, initialization_info)
     centered_text_window = VSplit([
         Window(width=D(weight=1)),
         HSplit([
+            Window(content=FormattedTextControl([(f"fg:{COLORS['error']}", "This process will erase all data on disk!")])),
             Window(content=FormattedTextControl(text)),
             Window(height=1, content=FormattedTextControl('')),
-            Window(content=FormattedTextControl(formatted_table)),
+            Window(content=FormattedTextControl(formatted_table)),                      
         ]),
         Window(width=D(weight=1)),
     ])
