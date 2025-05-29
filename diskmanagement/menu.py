@@ -5,7 +5,7 @@ from deepnexus.utils import load_config, get_prompt_text, clear_screen, status_m
 from diskmanagement.disks import show_all_disks, locate_disk, mount_disk, show_disks_tree
 from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart
 from diskmanagement.fstab_manager import run_fstab_menu
-from diskmanagement.initialize_disk import initialize_disk
+from diskmanagement.initialize_disk.initialize_disk import initialize_disk
 
 def disks_menu(app_config):
     disks_config = load_config(DISKS_CONFIG_PATH)

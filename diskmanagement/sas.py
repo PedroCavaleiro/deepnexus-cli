@@ -12,6 +12,12 @@ def show_sas_all(print_output = True):
         print(output)
     return output
 
+def show_sas_controller(controller, print_output = True):
+    output = run_command(f"{STORCLI} /c{controller}/sall show")
+    if print_output:
+        print(output)
+    return output
+
 def show_sas_disk(card, slot):
     output = run_command(f"{STORCLI} /c{card}/s{slot} show")
     print(output)
