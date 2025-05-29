@@ -15,19 +15,33 @@ from diskmanagement.initialize_disk.popups import show_mount_popup, show_sas_con
 from deepnexus.vars import COLORS
 
 def initialize_disk(disk_config, app_config):
-    dry_run = True
+    dry_run = False
     interactive_disk_setup(app_config, disk_config, dry_run=dry_run)
 
-def disk_init(disk, label):
-    run_command(f"parted -s {disk} mklabel gpt")
-    run_command(f"parted -s {disk} mkpart primary ext4 0% 100%")
+def disk_init(disk, label, output_lines, output_control):
+    log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'Preparing disk {disk}')
+    log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'Creating partition table...')
+    partition_table_output = run_command(f"parted -s {disk} mklabel gpt")
+    log_message(output_lines, output_control, f"fg:#ffffff", partition_table_output)
+    log_message(output_lines, output_control, f"fg:{COLORS['success']}", "Partition table created")
+    log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'Creating partition...')
+    partition_output = run_command(f"parted -s {disk} mkpart primary ext4 0% 100%")
+    log_message(output_lines, output_control, f"fg:#ffffff", partition_output)    
     partition = disk + '1'
-    run_command(f"mkfs.ext4 -F {partition}")
-    run_command(f"e2label {partition} \"{label}\"")
+    log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"Partition created: {partition}")
+    log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'Creating file system...')
+    mkfs_output = run_command(f"mkfs.ext4 -F {partition}")
+    log_message(output_lines, output_control, f"fg:#ffffff", mkfs_output)
+    log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"File system created")
+    log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'Labeling partition...')
+    labeling_output = run_command(f"e2label {partition} \"{label}\"")
+    log_message(output_lines, output_control, f"fg:#ffffff", labeling_output)
+    log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"Partition labeled")
     return partition
 
-def add_to_fstab(uuid, mount_point):
+def add_to_fstab(uuid, mount_point, output_lines, output_control):
     fstab_entry = f"UUID={uuid} {mount_point} ext4 defaults,nofail,x-systemd.device-timeout=0 0 2"
+    log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"Partition {uuid} added to fstab on mount point {mount_point}")
     with open('/etc/fstab', 'a') as f:
         f.write(fstab_entry + '\n')
 
@@ -49,6 +63,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
     phy_input = TextArea(prompt='Physical location: ', height=1)
     fstab_input = RadioList([(True, 'Yes'), (False, 'No')])
     config_input = RadioList([(True, 'Yes'), (False, 'No')])
+    mount_when_ready_input = RadioList([(True, 'Yes'), (False, 'No')])
     sas_controller_value = [-1]
     sas_controller_button = Button(
         text="Select SAS controller", 
@@ -92,21 +107,23 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         phy = phy_input.text.strip() or "Unknown"
         add_fstab = fstab_input.current_value
         add_config = config_input.current_value
+        mount_after_init = mount_when_ready_input.current_value
         card = int(sas_controller_value[0]) if app_config.get("enable_sas") else -1
         slt = int(sas_slot_value[0]) if app_config.get("enable_sas") else -1
 
-        os.makedirs(mount_point, exist_ok=True)
-
         if not dry_run:
-            partition = disk_init(disk, label)
+            os.makedirs(mount_point, exist_ok=True)
+            log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"Mount point {mount_point} ready")
+            partition = disk_init(disk, label, output_lines, output_control)
             uuid = get_partition_uuid(partition)
-            run_command(f"mount {partition} {mount_point}")
+            if mount_after_init:
+                run_command(f"mount {partition} {mount_point}")
             if add_fstab:
                 add_to_fstab(uuid, mount_point)
         else:
             partition = disk + '1'
             uuid = 'dry-run-uuid'
-            log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'[DRY RUN] DISK/PARTITION: {disk}/{partition} UUID: {uuid} LABEL: {label} MOUNT NAME: {mount_name}')
+            log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'[DRY RUN] DISK | PARTITION: {disk} | {partition} UUID: {uuid} LABEL: {label} MOUNT NAME: {mount_name}')
             log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'[DRY RUN] PHYSICAL LOCATION: {phy} FSTAB: {add_fstab} CONFIG: {add_config} CARD: {card} SLOT: {slt}')
 
         if add_config:
@@ -138,6 +155,9 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         spacer,
         mount_label_window,
         mount_button,
+        spacer,
+        Label("Mount after initialization?"),
+        mount_when_ready_input,
         spacer,
         Label("Add to /etc/fstab?"),
         fstab_input,
