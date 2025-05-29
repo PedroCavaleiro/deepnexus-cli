@@ -1,11 +1,10 @@
 from prompt_toolkit.application.current import get_app
 from diskmanagement.initialize_disk.utils import parse_sas_slots, load_used_slots
-from prompt_toolkit.widgets import Button, Dialog, Box, RadioList
+from prompt_toolkit.widgets import Button, Dialog, Box, RadioList, Label
 from prompt_toolkit.layout.containers import Float
 from diskmanagement.sas import show_sas_controller
 
 def show_sas_slot_popup(floats, controller, selected_value_container, on_close, dialog):
-    print(controller)
     output = show_sas_controller(controller, False)
     entries = [("-1", "None")]
 
@@ -29,7 +28,7 @@ def show_sas_slot_popup(floats, controller, selected_value_container, on_close, 
 
     popup_dialog = Dialog(
         title="Select SAS Slot",
-        body=Box(radio, padding=1),
+        body=Box([radio, Label(controller)], padding=1),
         buttons=[
             Button(text="OK", handler=on_select),
             Button(text="Cancel", handler=lambda: (
