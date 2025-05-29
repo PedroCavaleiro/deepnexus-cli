@@ -9,5 +9,7 @@ COLORS = {
     "error": "#DC3545",
     "success": "#198754",
     "warning": "#FFC107",
-    "info": "#0D6EFD"
+    "info": "#0D6EFD",
+    "reset": "\033[0m",
+    "purple": "\033[1;35m",
 }
