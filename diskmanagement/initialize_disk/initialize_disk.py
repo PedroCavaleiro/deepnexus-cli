@@ -105,8 +105,8 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
         else:
             partition = disk + '1'
             uuid = 'dry-run-uuid'
-            log_message(output_lines, output_control, 'fg:blue', f'[DRY RUN] DISK/PARTITION: {disk}/{partition} UUID: {uuid} LABEL: {label} MOUNT NAME: {mount_name}')
-            log_message(output_lines, output_control, 'fg:blue', f'[DRY RUN] PHYSICAL LOCATION: {phy} FSTAB: {add_fstab} CONFIG: {add_config} CARD: {card} SLOT: {slt}')
+            log_message(output_lines, output_control, 'fg:#DC3545', f'[DRY RUN] DISK/PARTITION: {disk}/{partition} UUID: {uuid} LABEL: {label} MOUNT NAME: {mount_name}')
+            log_message(output_lines, output_control, 'fg:#DC3545', f'[DRY RUN] PHYSICAL LOCATION: {phy} FSTAB: {add_fstab} CONFIG: {add_config} CARD: {card} SLOT: {slt}')
 
         if add_config:
             disk_config.append({
@@ -119,7 +119,7 @@ def interactive_disk_setup(app_config, disk_config, dry_run=False):
                 "dev": disk.replace("/dev/", "")
             })
 
-        log_message(output_lines, output_control, 'fg:green', 'Disk setup complete. Press ESC to exit.')
+        log_message(output_lines, output_control, 'fg:#198754', 'Disk setup complete. Press ESC to exit.')
 
     mount_label_control = FormattedTextControl(text=get_mount_text)
     mount_label_window = Window(content=mount_label_control, height=1)
