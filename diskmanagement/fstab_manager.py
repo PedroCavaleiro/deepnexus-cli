@@ -56,7 +56,10 @@ async def run_fstab_menu_async():
 
     text_control = FormattedTextControl(get_display_text, focusable=True)
     disk_window = Window(content=text_control, always_hide_cursor=True)
-    footer = Window(height=1, content=FormattedTextControl("Use ↑/↓ to navigate, (space) to toggle, q to quit"))
+    footer = Window(height=1, content=FormattedTextControl(
+        "Use ↑/↓ to navigate, space to toggle, r to remove, q to quit"
+    ))
+
 
     root_container = HSplit([disk_window, footer])
     body = Frame(root_container, title="FSTAB Manager")
@@ -78,9 +81,19 @@ async def run_fstab_menu_async():
         mount = disk["mount"]
         present = uuid in fstab_uuids
         toggle_fstab_entry(uuid, mount, present)
-        # Re-read fstab UUIDs after toggle
         fstab_uuids.clear()
         fstab_uuids.update(get_fstab_entries().keys())
+
+    @kb.add("r")
+    def remove(event):
+        disk = disks[selected[0]]
+        uuid = disk["uuid"]
+        mount = disk["mount"]
+        present = uuid in fstab_uuids
+        remove_fstab_entry(uuid, mount, present)
+        fstab_uuids.clear()
+        fstab_uuids.update(get_fstab_entries().keys())
+
 
     @kb.add("q")
     @kb.add("escape")
@@ -135,7 +148,7 @@ def get_fstab_entries():
     return entries
 
 
-def toggle_fstab_entry(uuid, mount, present):
+def remove_fstab_entry(uuid, mount, present):
     lines = []
     if os.path.exists(FSTAB_PATH):
         with open(FSTAB_PATH, "r") as f:
@@ -146,6 +159,36 @@ def toggle_fstab_entry(uuid, mount, present):
     if present:
         lines = [line for line in lines if f"UUID={uuid}" not in line]
     else:
+        lines.append(new_line)
+
+    with open(FSTAB_PATH, "w") as f:
+        f.writelines(lines)
+
+def toggle_fstab_entry(uuid, mount, present):
+    lines = []
+    new_line = f"UUID={uuid} {mount} {MOUNT_OPTIONS}\n"
+    updated = False
+
+    if os.path.exists(FSTAB_PATH):
+        with open(FSTAB_PATH, "r") as f:
+            for line in f:
+                stripped = line.strip()
+                if f"UUID={uuid}" in stripped:
+                    if present:
+                        # Cement: comment it out if not already
+                        if not stripped.startswith("#"):
+                            line = "# " + line
+                    else:
+                        # Reactivate: uncomment if commented
+                        if stripped.startswith("#"):
+                            line = line.lstrip("# ").rstrip() + "\n"
+                        else:
+                            # already active, skip duplication
+                            updated = True
+                    updated = True
+                lines.append(line)
+
+    if not updated and not present:
         lines.append(new_line)
 
     with open(FSTAB_PATH, "w") as f:
