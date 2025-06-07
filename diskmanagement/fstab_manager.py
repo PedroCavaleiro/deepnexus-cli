@@ -47,7 +47,7 @@ async def run_fstab_menu_async():
 
     # Merge fstab entries with mounted disks (mounted takes precedence)
     all_disks = {**fstab_entries, **mounted_disks}  # mounted_disks overrides same UUIDs
-    disks = list(all_disks.values())
+    disks = sorted(all_disks.values(), key=lambda disk: disk.get("mount", ""))
     fstab_uuids = set(fstab_entries.keys())
     selected = [0]
 
