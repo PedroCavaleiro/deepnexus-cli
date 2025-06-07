@@ -126,8 +126,14 @@ def get_fstab_entries():
                     if len(parts) >= 2:
                         uuid = parts[0].split("=")[1]
                         mount = parts[1]
-                        entries[uuid] = {"uuid": uuid, "mount": mount, "size": "not connected"}
+                        if mount.startswith("/mnt/"):
+                            entries[uuid] = {
+                                "uuid": uuid,
+                                "mount": mount,
+                                "size": "not connected"
+                            }
     return entries
+
 
 def toggle_fstab_entry(uuid, mount, present):
     lines = []
