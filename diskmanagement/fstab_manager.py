@@ -36,7 +36,7 @@ def build_lines(disks, fstab_uuids, selected_index, mounted_disks):
         uuid = disk["uuid"].ljust(uuid_width)
 
         line = f"{pointer}{checked} {mount}  {size}  UUID={uuid}{status}"
-        style = "class:highlight" if i == selected_index else "class:dim" if not connected else ""
+        style = "class:highlight" if i == selected_index else "class:dim" if not connected else "class:normal"
         lines.append((style, line + "\n"))
 
     return FormattedText(lines)
