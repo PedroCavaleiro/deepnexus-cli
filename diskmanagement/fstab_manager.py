@@ -107,9 +107,9 @@ def get_mounted_disks():
         parts = line.strip().split(None, 2)
         if len(parts) == 3:
             mount, uuid, size = parts
-            if uuid:  # Only process entries with UUIDs
+            if mount and mount.startswith("/mnt/") and uuid:
                 disks[uuid] = {
-                    "mount": mount if mount else "unknown",
+                    "mount": mount,
                     "uuid": uuid,
                     "size": format_size(int(size)) if size.isdigit() else "unknown"
                 }
