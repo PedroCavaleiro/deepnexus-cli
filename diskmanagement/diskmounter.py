@@ -15,7 +15,7 @@ from diskmanagement.initialize_disk.popups import show_mount_popup, show_log_pop
 from deepnexus.vars import COLORS
 
 def mount_disk_module():
-    dry_run = False
+    dry_run = True
     interactive_mount_disk(dry_run=dry_run)
 
 def add_to_fstab(uuid, mount_point, output_lines, output_control):
@@ -68,6 +68,7 @@ def interactive_mount_disk(dry_run=False):
                 add_to_fstab(uuid, mount_point)
         else:
             uuid = 'dry-run-uuid'
+            log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"Mount point {mount_point} ready")
             log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'[DRY RUN] PARTITION: {partition} UUID: {uuid} MOUNT NAME: {mount_name} FSTAB: {add_fstab}')
 
         log_message(output_lines, output_control, f"fg:{COLORS['success']}", 'Disk mounted successfully. Press ESC to exit.')
