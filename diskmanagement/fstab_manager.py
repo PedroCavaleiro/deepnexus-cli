@@ -36,7 +36,7 @@ def build_lines(disks, fstab_uuids, selected_index, mounted_disks):
         uuid = disk["uuid"].ljust(uuid_width)
 
         line = f"{pointer}{checked} {mount}  {size}  UUID={uuid}{status}"
-        style = "class:highlight" if i == selected_index else "class:dim" if not connected else ""
+        style = "class:highlight" if i == selected_index else "class:dim" if not connected else "class:normal"
         lines.append((style, line + "\n"))
 
     return FormattedText(lines)
@@ -47,7 +47,7 @@ async def run_fstab_menu_async():
 
     # Merge fstab entries with mounted disks (mounted takes precedence)
     all_disks = {**fstab_entries, **mounted_disks}  # mounted_disks overrides same UUIDs
-    disks = list(all_disks.values())
+    disks = sorted(all_disks.values(), key=lambda disk: disk.get("mount", ""))
     fstab_uuids = set(fstab_entries.keys())
     selected = [0]
 
