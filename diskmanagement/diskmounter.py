@@ -52,9 +52,8 @@ def interactive_mount_disk(dry_run=False):
     def accept():
         show_log_popup(floats, output_control, on_close=lambda: get_app().exit())
 
-        partition = disk_radio.current_value        
-        mount_name = mount_point_value[0]
-        mount_point = f"/mnt/{mount_name}"        
+        partition = disk_radio.current_value
+        mount_point = mount_point_value[0]
         add_fstab = fstab_input.current_value
 
         if not dry_run:
@@ -69,7 +68,7 @@ def interactive_mount_disk(dry_run=False):
         else:
             uuid = 'dry-run-uuid'
             log_message(output_lines, output_control, f"fg:{COLORS['success']}", f"Mount point {mount_point} ready")
-            log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'[DRY RUN] PARTITION: {partition} UUID: {uuid} MOUNT NAME: {mount_name} FSTAB: {add_fstab}')
+            log_message(output_lines, output_control, f"fg:{COLORS['info']}", f'[DRY RUN] PARTITION: {partition} UUID: {uuid} MOUNT NAME: {mount_point} FSTAB: {add_fstab}')
 
         log_message(output_lines, output_control, f"fg:{COLORS['success']}", 'Disk mounted successfully. Press ESC to exit.')
 
