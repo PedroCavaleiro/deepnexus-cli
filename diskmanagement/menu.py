@@ -19,9 +19,9 @@ def disks_menu(app_config):
             cmd = input(get_prompt_text(app_config, ["disks"])).strip()
             if cmd == "exit":
                 break
-            elif cmd == "mount disk" or "mount":
+            elif cmd == "mount disk" or cmd == "mount":
                 mount_disk_module()
-            elif cmd == "unmount disk" or "unmount":
+            elif cmd == "unmount disk" or cmd == "unmount":
                 unmount_disk_module()
             elif cmd == "initialize disk" or cmd == "init disk":
                 initialize_disk(disks_config, app_config)
