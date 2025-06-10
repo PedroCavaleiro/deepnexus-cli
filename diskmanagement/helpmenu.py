@@ -8,7 +8,8 @@ Available commands:
   show                       - If SAS enabled shows SAS connected disks otherwise shows all disks
   show all                   - Shows all connected disks
   fstab                      - Shows the fstab menu
-  mount disk                 - Mounts a disk on a selected mount point
+  mount disk, mount          - Mounts a disk on a selected mount point
+  unmount disk, unmount      - Unmounts a disk under the /mnt
   lsblk [options]            - Runs the lsblk command directly and passes all options
   locate disk                - Interactively locate a disk
   locate disk ID             - Locate a specific disk by mount ID (e.g., sda)

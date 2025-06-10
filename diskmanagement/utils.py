@@ -79,3 +79,14 @@ def log_message(output_lines, output_control, style, message):
         output_lines.append((style, message + '\n'))
         output_control.text = FormattedText(output_lines)
         get_app().invalidate()
+
+
+def list_mounted_disks():
+    mnt = '/mnt'
+    disks = []
+    if os.path.exists(mnt) and os.path.isdir(mnt):
+        for name in os.listdir(mnt):
+            path = os.path.join(mnt, name)
+            if os.path.isdir(path):
+                disks.append(path)
+    return disks

@@ -7,6 +7,7 @@ from diskmanagement.sas import show_sas_all, show_sas_disk, show_disk_smart, sho
 from diskmanagement.fstab_manager import run_fstab_menu
 from diskmanagement.initialize_disk.initialize_disk import initialize_disk
 from diskmanagement.diskmounter import mount_disk_module
+from diskmanagement.diskunmounter import unmount_disk_module
 
 def disks_menu(app_config):
     disks_config = load_config(DISKS_CONFIG_PATH)
@@ -18,8 +19,10 @@ def disks_menu(app_config):
             cmd = input(get_prompt_text(app_config, ["disks"])).strip()
             if cmd == "exit":
                 break
-            elif cmd == "mount disk":
+            elif cmd == "mount disk" or "mount":
                 mount_disk_module()
+            elif cmd == "unmount disk" or "unmount":
+                unmount_disk_module()
             elif cmd == "initialize disk" or cmd == "init disk":
                 initialize_disk(disks_config, app_config)
             elif cmd == "back" or cmd == "..":
